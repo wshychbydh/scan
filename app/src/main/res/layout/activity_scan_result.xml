@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/activity_scan_result"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/white"
+  android:gravity="center"
+  android:orientation="vertical">
+
+  <ImageView
+    android:id="@+id/iv_scan"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:maxWidth="200dp"
+    android:maxHeight="200dp"
+    android:minWidth="100dp"
+    android:minHeight="100dp" />
+
+  <TextView
+    android:id="@+id/tv_scan_content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="40dp"
+    android:autoLink="all"
+    android:linksClickable="true" />
+
+  <Button
+    android:id="@+id/btn_scan_copy"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:text="复制" />
+</LinearLayout>
