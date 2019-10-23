@@ -39,7 +39,7 @@
 //
 //  override fun checkPermission(listener: PermissionListener) {
 //    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//      listener.onPermissionGranted()
+//      callback = listener
 //      requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1001)
 //    } else {
 //      listener.onPermissionGranted()

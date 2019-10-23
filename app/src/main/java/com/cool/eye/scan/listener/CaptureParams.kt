@@ -11,5 +11,4 @@ interface CaptureParams {
   fun getSurfaceView(): SurfaceView
 
   fun getCaptureView(): CaptureView
-
 }
