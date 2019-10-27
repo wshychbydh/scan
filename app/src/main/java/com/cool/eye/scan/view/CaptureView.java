@@ -1,6 +1,7 @@
 package com.cool.eye.scan.view;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
@@ -21,11 +22,15 @@ public class CaptureView extends View {
     public long foundTime;
   }
 
-  private static final int MASK_COLOR = 0x80000000;
-  private int possiblePointColor = 0xC0FFFF00;
+  public static final int MASK_COLOR = 0x80000000;
+  public static final int POSSIBLE_POINT_COLOR = 0xC0FFFF00;
+  public static final int POSSIBLE_POINT_ALIVE_DURATION = 200;
+  public static final int SCAN_DURATION = 1500;
 
-  private static final int POSSIBLE_POINT_ALIVE_MS = 200;
-  private int scanDuration = 1000;
+  private int maskColor = MASK_COLOR;
+  private int possiblePointColor = POSSIBLE_POINT_COLOR;
+  private int possiblePointAliveDuration = POSSIBLE_POINT_ALIVE_DURATION;
+  private int scanDuration = SCAN_DURATION;
   private long startTime = -1;
 
   private Rect frame;
@@ -36,58 +41,74 @@ public class CaptureView extends View {
 
   public CaptureView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    init();
+    init(context, attrs);
   }
 
   public CaptureView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init();
+    init(context, attrs);
   }
 
   public CaptureView(Context context) {
     super(context);
-    init();
+    init(context, null);
   }
 
-  public void init() {
+  public void init(Context context, AttributeSet attrs) {
     frame = new Rect();
     paint = new Paint();
     paint.setAntiAlias(true);
     possiblePoints = new LinkedList<>();
-    frameDrawable = getResources().getDrawable(R.drawable.qrcode_scan_frame);
-    scannerDrawable = getResources().getDrawable(R.drawable.qrcode_scan_scaner);
+    int frameResId = R.drawable.qrcode_scan_frame;
+    int scannerResId = R.drawable.qrcode_scan_scaner;
+    if (attrs != null) {
+      TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CaptureView);
+      maskColor = array.getColor(R.styleable.CaptureView_maskColor, MASK_COLOR);
+      possiblePointColor = array
+          .getColor(R.styleable.CaptureView_possiblePointColor, POSSIBLE_POINT_COLOR);
+      possiblePointAliveDuration = array
+          .getInt(R.styleable.CaptureView_possiblePointAliveDuration,
+              POSSIBLE_POINT_ALIVE_DURATION);
+      scanDuration = array.getInt(R.styleable.CaptureView_scanDuration, SCAN_DURATION);
+      frameResId = array
+          .getResourceId(R.styleable.CaptureView_frameDrawable, R.drawable.qrcode_scan_frame);
+      scannerResId = array
+          .getResourceId(R.styleable.CaptureView_scannerDrawable, R.drawable.qrcode_scan_scaner);
+      array.recycle();
+    }
+
+    frameDrawable = getResources().getDrawable(frameResId);
+    scannerDrawable = getResources().getDrawable(scannerResId);
   }
 
-  /**
-   * Call invalidate after set
-   * @param color
-   */
+  public void setMaskColor(int maskColor) {
+    this.maskColor = maskColor;
+    invalidate();
+  }
+
+  public void setPossiblePointAliveDuration(int possiblePointAliveDuration) {
+    this.possiblePointAliveDuration = possiblePointAliveDuration;
+    invalidate();
+  }
+
   public void setPossiblePointColor(int color) {
     this.possiblePointColor = color;
+    invalidate();
   }
 
-  /**
-   * Call invalidate after set
-   * @param duration
-   */
-  public void setScannDuration(int duration) {
+  public void setScanDuration(int duration) {
     scanDuration = duration;
+    invalidate();
   }
 
-  /**
-   * Call invalidate after set
-   * @param resId
-   */
-  public void setScanFrameRes(@DrawableRes int resId) {
+  public void setFrameDrawableRes(@DrawableRes int resId) {
     frameDrawable = getResources().getDrawable(resId);
+    invalidate();
   }
 
-  /**
-   * Call invalidate after set
-   * @param resId
-   */
-  public void setScannerRes(@DrawableRes int resId) {
+  public void setScannerDrawableRes(@DrawableRes int resId) {
     scannerDrawable = getResources().getDrawable(resId);
+    invalidate();
   }
 
   @Override
@@ -113,7 +134,7 @@ public class CaptureView extends View {
   protected void onDraw(Canvas canvas) {
 
     // Draw mask
-    paint.setColor(MASK_COLOR);
+    paint.setColor(maskColor);
     paint.setStyle(Style.FILL);
     int width = canvas.getWidth();
     int height = canvas.getHeight();
@@ -127,13 +148,13 @@ public class CaptureView extends View {
     paint.setStyle(Style.FILL);
     long current = System.currentTimeMillis();
     while (possiblePoints.size() > 0
-        && current - possiblePoints.peek().foundTime >= POSSIBLE_POINT_ALIVE_MS) {
+        && current - possiblePoints.peek().foundTime >= possiblePointAliveDuration) {
       possiblePoints.poll();
     }
     for (int i = 0; i < possiblePoints.size(); i++) {
       PossiblePoint point = possiblePoints.get(i);
-      int radius = (int) (5 * (POSSIBLE_POINT_ALIVE_MS - current + point.foundTime)
-          / POSSIBLE_POINT_ALIVE_MS);
+      int radius = (int) (5 * (possiblePointAliveDuration - current + point.foundTime)
+          / possiblePointAliveDuration);
       if (radius > 0) {
         canvas.drawCircle(frame.left + point.x, frame.top + point.y, radius, paint);
       }

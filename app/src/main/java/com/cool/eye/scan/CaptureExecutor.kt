@@ -100,21 +100,21 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
   }
 
   override fun onDecodeSuccess(result: Result, source: LuminanceSource, bitmap: Bitmap) {
-    var bitmap = bitmap
+    var bmp = bitmap
     beepManager?.playBeepSound()
     if (vibrator) {
       vibrator()
     }
     isDecoding = false
-    if (bitmap.width > 100 || bitmap.height > 100) {
+    if (bmp.width > 100 || bmp.height > 100) {
       val matrix = Matrix()
-      matrix.postScale(100f / bitmap.width, 100f / bitmap.height)
-      val resizeBmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap
+      matrix.postScale(100f / bmp.width, 100f / bmp.height)
+      val resizeBmp = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp
           .height, matrix, true)
-      bitmap.recycle()
-      bitmap = resizeBmp
+      bmp.recycle()
+      bmp = resizeBmp
     }
-    params.getCaptureListener().onScanSucceed(bitmap, result.text)
+    params.getCaptureListener().onScanSucceed(bmp, result.text)
   }
 
   override fun onDecodeFailed(source: LuminanceSource) {
@@ -126,7 +126,7 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
   }
 
   override fun foundPossibleResultPoint(point: ResultPoint) {
-    params.getCaptureView()?.addPossibleResultPoint(point)
+    params.getCaptureView().addPossibleResultPoint(point)
   }
 
   /**
