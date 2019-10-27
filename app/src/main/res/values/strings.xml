@@ -1,7 +1,5 @@
 <resources>
-    <string name="app_name">Scan</string>
-
-    <string name="capture_camera_failed">Camera disabled</string>
-    <string name="capture_decode_failed">No QRCode found</string>
-    <string name="image_path_error">Image invalid</string>
+  <string name="capture_camera_failed">Camera disabled</string>
+  <string name="capture_decode_failed">No QRCode found</string>
+  <string name="image_path_error">Image invalid</string>
 </resources>

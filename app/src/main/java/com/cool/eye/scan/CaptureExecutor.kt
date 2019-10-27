@@ -11,8 +11,8 @@ import android.os.Build
 import android.os.Vibrator
 import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.PermissionChecker
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
-class CaptureExecutor(val activity: AppCompatActivity, val params: CaptureParams)
+class CaptureExecutor(private val activity: FragmentActivity, private val params: CaptureParams)
   : SurfaceHolder.Callback, PreviewFrameShotListener, DecodeListener, LifecycleObserver {
 
   private var beepManager: BeepManager? = null
@@ -42,8 +42,6 @@ class CaptureExecutor(val activity: AppCompatActivity, val params: CaptureParams
   private var previewFrameRect: Rect? = null
   @Volatile
   private var isDecoding = false
-  @Volatile
-  private var isPreviewing = false
 
   private var vibrator = true
   private var playBeep = true
@@ -55,32 +53,30 @@ class CaptureExecutor(val activity: AppCompatActivity, val params: CaptureParams
 
   @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
   fun onCreate() {
+    params.getSurfaceView().holder.addCallback(this)
+  }
+
+  override fun surfaceCreated(holder: SurfaceHolder) {
     params.checkPermission(object : PermissionListener {
       override fun onPermissionGranted() {
-        if (isPreviewing) return
-        isPreviewing = true
-        params.getSurfaceView().holder.addCallback(this@CaptureExecutor)
         cameraManager = CameraManager(activity)
         cameraManager!!.setPreviewFrameShotListener(this@CaptureExecutor)
+        cameraManager!!.initCamera(holder)
+        if (!cameraManager!!.isCameraAvailable) {
+          params.getCaptureListener().onScanFailed(IllegalStateException(activity.getString(R.string.capture_camera_failed)))
+          return
+        }
         if (playBeep) {
           beepManager = BeepManager(activity)
           beepManager!!.updatePrefs()
         }
+        cameraManager!!.startPreview()
+        params.getCaptureListener().onPreviewSucceed()
+        if (!isDecoding) {
+          cameraManager!!.requestPreviewFrameShot()
+        }
       }
     })
-  }
-
-  override fun surfaceCreated(holder: SurfaceHolder) {
-    cameraManager!!.initCamera(holder)
-    if (!cameraManager!!.isCameraAvailable) {
-      params.getCaptureListener().onScanFailed(IllegalStateException(activity.getString(R.string.capture_camera_failed)))
-      return
-    }
-    cameraManager!!.startPreview()
-    params.getCaptureListener().onPreviewSucceed()
-    if (!isDecoding) {
-      cameraManager!!.requestPreviewFrameShot()
-    }
   }
 
   override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {

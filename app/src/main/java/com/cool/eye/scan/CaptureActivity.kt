@@ -1,6 +1,7 @@
 package com.cool.eye.scan
 
 import android.annotation.TargetApi
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.SurfaceView
@@ -30,7 +31,7 @@ abstract class CaptureActivity : AppCompatActivity() {
 
       override fun checkPermission(listener: PermissionListener) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-          listener.onPermissionGranted()
+          callback = listener
           requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1001)
         } else {
           listener.onPermissionGranted()
@@ -47,7 +48,7 @@ abstract class CaptureActivity : AppCompatActivity() {
     if (requestCode == 1001) {
       //这里只请求了一个权限，实际情况需要逐个判断
       //参考https://github.com/wshychbydh/permission
-      if (grantResults.size == 1) {
+      if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         callback?.onPermissionGranted()
       }
     }
