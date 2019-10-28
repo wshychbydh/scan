@@ -20,32 +20,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import com.cool.eye.scan.camera.Size;
 
-/**
- * <p>
- * Android摄像机获取的图像默认采用YCbCr_420_SP（即YUV420SP或NV21）存储格式，为YUV图像的一种。
- * </p>
- * <p>
- * <b>[采样比例]</b><br>
- * YUV图像采样比例以下几种：<br> 444采样中，Y:U:V=4:4:4，每一个Y对应一个UV<br> 422采样中，Y:U:V=4:2:2，每两个Y共用一个UV<br>
- * 411采样中，Y:U:V=4:1:1，每四个Y共用一个UV<br> 420采样中，Y:UV=4:2或Y:U:V=4:1:1，每四个Y共用一个UV<br>
- * 其中420采样并不代表只有U没有V，而是在采样的时候，如果这一行用4:2:0采样，下一行就用4:0:2采样，总体比率还是Y:UV=4:2或Y:U:V=4:1:1的。
- * </p>
- * <p>
- * <b>[存储格式]</b><br>
- * YUV图像有两大类型，Planar类型和Packed类型。<br> Planar存储格式为：Y...U...V... 或 Y...V...U... 或 Y...(UV)... 等；<br>
- * Packed存储格式为： (YUV)... 或 (YUVY)... 或 (UYVY)... 等
- * </p>
- * <p>
- * <b>[数据大小]</b><br>
- * YUV420图像为Planar类型，先是连续存储的Y（明度/灰度信息），然后是色彩信息U(Cb，蓝色色度)和V(Cr，红色色度)。<br>
- * YUV420图像中的比例为Y:UV=4:2，其中Y、U、V各占一个byte。 <br> 也就是说2/3的数据为Y信息，1/3为色彩信息，所以YUV数据长度为图像长宽乘积的1.5倍。<br>
- * YUV420有两种，YUV420P和YUV420SP。<br> YUV420P为Y...U...V...类型；<br> YUV420SP为Y...(UV)...类型，其中的U、V为交错存储。<br>
- * </p>
- * <p>
- * <b>[二维码处理]</b><br>
- * 在二维码处理过程中，只需要用到Y信息（前2/3的数据），不必考虑UV数据具体存储规则。<br> 本类兼容所有Planar格式的YUV图像。
- * </p>
- */
 public class PlanarYUVLuminanceSource extends LuminanceSource {
 
   private byte[] yuvData;
@@ -53,9 +27,9 @@ public class PlanarYUVLuminanceSource extends LuminanceSource {
   private Rect previewRect;
 
   /**
-   * @param yuvData YUV数据，包含Y信息和UV信息
-   * @param dataSize 图像大小
-   * @param previewRect 要处理的图像区域
+   * @param yuvData data of YUV
+   * @param dataSize image size
+   * @param previewRect Image area to process
    */
   public PlanarYUVLuminanceSource(byte[] yuvData, Size dataSize, Rect previewRect) {
     super(previewRect.width(), previewRect.height());
@@ -123,7 +97,7 @@ public class PlanarYUVLuminanceSource extends LuminanceSource {
   }
 
   /**
-   * 根据扫描结果，生成一个灰度图像
+   * Based on the scan results, a grayscale image is generated
    */
   public Bitmap renderCroppedGreyScaleBitmap() {
     int width = getWidth();

@@ -46,8 +46,7 @@ abstract class CaptureActivity : AppCompatActivity() {
   override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     if (requestCode == 1001) {
-      //这里只请求了一个权限，实际情况需要逐个判断
-      //参考https://github.com/wshychbydh/permission
+      //reference https://github.com/wshychbydh/permission
       if (grantResults.size == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         callback?.onPermissionGranted()
       }
