@@ -78,7 +78,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
 
   @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
   private fun onCreate() {
-    params.surfaceView.holder.addCallback(this)
+    params.getSurfaceView().holder.addCallback(this)
   }
 
   override fun surfaceCreated(holder: SurfaceHolder) {
@@ -88,7 +88,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         cameraManager!!.setPreviewFrameShotListener(this@CaptureExecutor)
         cameraManager!!.initCamera(holder)
         if (!cameraManager!!.isCameraAvailable) {
-          params.captureListener.onScanFailed(IllegalStateException(context.getString(R.string.capture_camera_failed)))
+          params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_camera_failed)))
           return
         }
         if (playBeep) {
@@ -97,7 +97,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         }
         cameraManager!!.startPreview()
         isPreviewed = true
-        params.captureListener.onPreviewSucceed()
+        params.getCaptureListener().onPreviewSucceed()
         if (!isDecoding) {
           cameraManager!!.requestPreviewFrameShot()
         }
@@ -119,7 +119,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
     decodeThread?.cancel()
     previewFrameRect = previewFrameRect
-        ?: cameraManager?.getPreviewFrameRect(params.captureView.frameRect) ?: return
+        ?: cameraManager?.getPreviewFrameRect(params.getCaptureView().frameRect) ?: return
     val luminanceSource = PlanarYUVLuminanceSource(data, dataSize, previewFrameRect)
     decodeThread = DecodeThread(luminanceSource, this)
     isDecoding = true
@@ -141,19 +141,19 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
       bmp.recycle()
       bmp = resizeBmp
     }
-    params.captureListener.onScanSucceed(bmp, result.text)
+    params.getCaptureListener().onScanSucceed(bmp, result.text)
   }
 
   override fun onDecodeFailed(source: LuminanceSource) {
     if (source is RGBLuminanceSourcePixels) {
-      params.captureListener.onScanFailed(IllegalStateException(context.getString(R.string.capture_decode_failed)))
+      params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_decode_failed)))
     }
     isDecoding = false
     cameraManager!!.requestPreviewFrameShot()
   }
 
   override fun foundPossibleResultPoint(point: ResultPoint) {
-    params.captureView.addPossibleResultPoint(point)
+    params.getCaptureView().addPossibleResultPoint(point)
   }
 
   /**
@@ -187,7 +187,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         DocumentUtil.getPath(context, uri)
       }
       if (path.isNullOrEmpty()) {
-        params.captureListener.onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
+        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
       } else {
         parseImage(path)
       }
@@ -199,7 +199,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     GlobalScope.launch {
       val cameraBitmap = withContext(Dispatchers.IO) { DocumentUtil.getBitmap(path) }
       if (cameraBitmap == null) {
-        params.captureListener.onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
+        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
       } else {
         parseImage(cameraBitmap)
       }

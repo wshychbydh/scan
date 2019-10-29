@@ -7,9 +7,9 @@ interface CaptureParams {
 
   fun checkPermission(listener: PermissionListener)
 
-  val captureListener: CaptureListener
+  fun getCaptureListener(): CaptureListener
 
-  val surfaceView: SurfaceView
+  fun getSurfaceView(): SurfaceView
 
-  val captureView: CaptureView
+  fun getCaptureView(): CaptureView
 }
