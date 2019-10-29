@@ -72,7 +72,7 @@ object QRCodeUtil {
       for (y in 0 until params.height) {
         for (x in 0 until params.width) {
           if (bitMatrix.get(x, y)) {
-            pixels[y * params.width + x] = -0x1000000
+            pixels[y * params.width + x] = params.qrColor
           } else {
             pixels[y * params.width + x] = -0x1
           }
