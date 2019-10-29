@@ -2,6 +2,8 @@ package com.cool.eye.scan
 
 import android.annotation.TargetApi
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.CallSuper
@@ -12,7 +14,7 @@ import com.cool.eye.scan.listener.PermissionListener
 @TargetApi(Build.VERSION_CODES.KITKAT)
 abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
 
-  protected lateinit var executor: CaptureExecutor
+  private lateinit var executor: CaptureExecutor
 
   @CallSuper
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,5 +41,49 @@ abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
         callback?.onPermissionGranted()
       }
     }
+  }
+
+  @TargetApi(Build.VERSION_CODES.KITKAT)
+  fun parseImage(uri: Uri) {
+    executor.parseImage(uri)
+  }
+
+  @TargetApi(Build.VERSION_CODES.KITKAT)
+  fun parseImage(path: String) {
+    executor.parseImage(path)
+  }
+
+  @TargetApi(Build.VERSION_CODES.KITKAT)
+  fun parseImage(bitmap: Bitmap) {
+    executor.parseImage(bitmap)
+  }
+
+  /**
+   * Call after CaptureListener.onPreviewSucceed
+   */
+  fun isFlashEnable(): Boolean {
+    return executor.isFlashEnable()
+  }
+
+  /**
+   * Call after CaptureListener.onPreviewSucceed
+   */
+  fun disableFlashlight() {
+    executor.disableFlashlight()
+  }
+
+  /**
+   * Call after CaptureListener.onPreviewSucceed
+   */
+  fun enableFlashlight() {
+    executor.enableFlashlight()
+  }
+
+  fun vibratorAble(enable: Boolean) {
+    executor.vibrator(enable)
+  }
+
+  fun playBeepAble(playBeep: Boolean) {
+    executor.playBeep(playBeep)
   }
 }

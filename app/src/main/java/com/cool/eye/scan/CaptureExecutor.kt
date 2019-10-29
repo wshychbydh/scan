@@ -73,8 +73,11 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   private var vibrator = true
   private var playBeep = true
 
+  @Volatile
+  private var isPreviewed = false
+
   @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-  fun onCreate() {
+  private fun onCreate() {
     params.surfaceView.holder.addCallback(this)
   }
 
@@ -93,6 +96,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
           beepManager!!.updatePrefs()
         }
         cameraManager!!.startPreview()
+        isPreviewed = true
         params.captureListener.onPreviewSucceed()
         if (!isDecoding) {
           cameraManager!!.requestPreviewFrameShot()
@@ -106,6 +110,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   }
 
   override fun surfaceDestroyed(holder: SurfaceHolder) {
+    isPreviewed = false
     cameraManager?.stopPreview()
     decodeThread?.cancel()
     cameraManager?.release()
@@ -155,6 +160,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
    * Call after CaptureListener.onPreviewSucceed
    */
   fun isFlashEnable(): Boolean {
+    if (!isPreviewed) return false
     return cameraManager?.isFlashlightAvailable ?: false
   }
 
@@ -162,6 +168,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
    * Call after CaptureListener.onPreviewSucceed
    */
   fun disableFlashlight() {
+    if (!isPreviewed) return
     cameraManager?.disableFlashlight()
   }
 
@@ -169,6 +176,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
    * Call after CaptureListener.onPreviewSucceed
    */
   fun enableFlashlight() {
+    if (!isPreviewed) return
     cameraManager?.enableFlashlight()
   }
 
@@ -212,7 +220,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   }
 
   @RequiresPermission(android.Manifest.permission.VIBRATE)
-  fun vibrator() {
+  private fun vibrator() {
     if (PermissionChecker.checkSelfPermission(context, android.Manifest.permission.VIBRATE)
         == PermissionChecker.PERMISSION_GRANTED) {
       val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
