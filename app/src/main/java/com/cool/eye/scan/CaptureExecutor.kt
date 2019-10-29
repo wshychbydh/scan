@@ -1,8 +1,8 @@
 package com.cool.eye.scan
 
 import android.annotation.TargetApi
+import android.app.Activity
 import android.content.Context
-import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Rect
@@ -12,6 +12,7 @@ import android.os.Vibrator
 import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
 import androidx.core.content.PermissionChecker
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -32,8 +33,34 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
-class CaptureExecutor(private val activity: FragmentActivity, private val params: CaptureParams)
-  : SurfaceHolder.Callback, PreviewFrameShotListener, DecodeListener, LifecycleObserver {
+class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, DecodeListener, LifecycleObserver {
+
+  private val context: Context
+  private val params: CaptureParams
+
+  constructor(activity: Activity, params: CaptureParams) {
+    this.context = activity
+    this.params = params
+    if (activity is FragmentActivity) {
+      activity.lifecycle.addObserver(this)
+    }
+  }
+
+  constructor(fragment: Fragment, params: CaptureParams) {
+    this.context = fragment.requireContext()
+    this.params = params
+    fragment.lifecycle.addObserver(this)
+  }
+
+  constructor(context: Context, params: CaptureParams) {
+    this.context = context
+    this.params = params
+    if (context is FragmentActivity) {
+      context.lifecycle.addObserver(this)
+    } else {
+      onCreate()
+    }
+  }
 
   private var beepManager: BeepManager? = null
   private var cameraManager: CameraManager? = null
@@ -46,32 +73,27 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
   private var vibrator = true
   private var playBeep = true
 
-  init {
-    activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-    activity.lifecycle.addObserver(this)
-  }
-
   @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
   fun onCreate() {
-    params.getSurfaceView().holder.addCallback(this)
+    params.surfaceView.holder.addCallback(this)
   }
 
   override fun surfaceCreated(holder: SurfaceHolder) {
     params.checkPermission(object : PermissionListener {
       override fun onPermissionGranted() {
-        cameraManager = CameraManager(activity)
+        cameraManager = CameraManager(context)
         cameraManager!!.setPreviewFrameShotListener(this@CaptureExecutor)
         cameraManager!!.initCamera(holder)
         if (!cameraManager!!.isCameraAvailable) {
-          params.getCaptureListener().onScanFailed(IllegalStateException(activity.getString(R.string.capture_camera_failed)))
+          params.captureListener.onScanFailed(IllegalStateException(context.getString(R.string.capture_camera_failed)))
           return
         }
         if (playBeep) {
-          beepManager = BeepManager(activity)
+          beepManager = BeepManager(context)
           beepManager!!.updatePrefs()
         }
         cameraManager!!.startPreview()
-        params.getCaptureListener().onPreviewSucceed()
+        params.captureListener.onPreviewSucceed()
         if (!isDecoding) {
           cameraManager!!.requestPreviewFrameShot()
         }
@@ -92,9 +114,9 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
     decodeThread?.cancel()
     previewFrameRect = previewFrameRect
-        ?: cameraManager?.getPreviewFrameRect(params.getCaptureView().frameRect) ?: return
+        ?: cameraManager?.getPreviewFrameRect(params.captureView.frameRect) ?: return
     val luminanceSource = PlanarYUVLuminanceSource(data, dataSize, previewFrameRect)
-    decodeThread = DecodeThread(luminanceSource, this@CaptureExecutor)
+    decodeThread = DecodeThread(luminanceSource, this)
     isDecoding = true
     decodeThread!!.execute()
   }
@@ -114,19 +136,19 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
       bmp.recycle()
       bmp = resizeBmp
     }
-    params.getCaptureListener().onScanSucceed(bmp, result.text)
+    params.captureListener.onScanSucceed(bmp, result.text)
   }
 
   override fun onDecodeFailed(source: LuminanceSource) {
     if (source is RGBLuminanceSourcePixels) {
-      params.getCaptureListener().onScanFailed(IllegalStateException(activity.getString(R.string.capture_decode_failed)))
+      params.captureListener.onScanFailed(IllegalStateException(context.getString(R.string.capture_decode_failed)))
     }
     isDecoding = false
     cameraManager!!.requestPreviewFrameShot()
   }
 
   override fun foundPossibleResultPoint(point: ResultPoint) {
-    params.getCaptureView().addPossibleResultPoint(point)
+    params.captureView.addPossibleResultPoint(point)
   }
 
   /**
@@ -154,10 +176,10 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
   fun parseImage(uri: Uri) {
     GlobalScope.launch {
       val path = withContext(Dispatchers.IO) {
-        DocumentUtil.getPath(activity, uri)
+        DocumentUtil.getPath(context, uri)
       }
       if (path.isNullOrEmpty()) {
-        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(activity.getString(R.string.image_path_error)))
+        params.captureListener.onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
       } else {
         parseImage(path)
       }
@@ -169,7 +191,7 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
     GlobalScope.launch {
       val cameraBitmap = withContext(Dispatchers.IO) { DocumentUtil.getBitmap(path) }
       if (cameraBitmap == null) {
-        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(activity.getString(R.string.image_path_error)))
+        params.captureListener.onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
       } else {
         parseImage(cameraBitmap)
       }
@@ -191,9 +213,9 @@ class CaptureExecutor(private val activity: FragmentActivity, private val params
 
   @RequiresPermission(android.Manifest.permission.VIBRATE)
   fun vibrator() {
-    if (PermissionChecker.checkSelfPermission(activity, android.Manifest.permission.VIBRATE)
+    if (PermissionChecker.checkSelfPermission(context, android.Manifest.permission.VIBRATE)
         == PermissionChecker.PERMISSION_GRANTED) {
-      val vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+      val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
       vibrator.vibrate(200L)
     }
   }

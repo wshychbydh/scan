@@ -4,19 +4,20 @@ import android.annotation.TargetApi
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.annotation.CallSuper
-import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.cool.eye.scan.listener.CaptureParams
 import com.cool.eye.scan.listener.PermissionListener
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
-abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
+abstract class CaptureFragment : Fragment(), CaptureParams {
 
   protected lateinit var executor: CaptureExecutor
 
   @CallSuper
-  override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+  override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    super.onViewCreated(view, savedInstanceState)
     executor = CaptureExecutor(this, this)
   }
 
