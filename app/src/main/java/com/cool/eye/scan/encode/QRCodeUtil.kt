@@ -94,7 +94,7 @@ object QRCodeUtil {
       if (bitmap != null && params.savePath != null) {
         bitmap.compress(
             params.saveFormat,
-            params.quality,
+            params.saveQuality,
             FileOutputStream(params.savePath)
         )
       }
