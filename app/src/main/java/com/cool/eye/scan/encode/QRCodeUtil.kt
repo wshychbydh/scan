@@ -54,7 +54,7 @@ object QRCodeUtil {
   @WorkerThread
   fun createQRImageAsync(params: QRParams): Bitmap? {
 
-    check(Looper.myLooper() != Looper.getMainLooper()) { "Call on sub thread or call @createQRImageReturnOnUI instead" }
+    check(Looper.myLooper() != Looper.getMainLooper()) { "You must be call this on sub thread" }
 
     if (!params.isValid()) return null
 
