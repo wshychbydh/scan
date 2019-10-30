@@ -16,7 +16,7 @@
 2、在项目的build.gradle中添加依赖
 ```
     dependencies {
-        implementation 'com.github.wshychbydh:scan:1.0.0'
+        implementation 'com.github.wshychbydh:scan:1.2.4'
     }
 ```
 
