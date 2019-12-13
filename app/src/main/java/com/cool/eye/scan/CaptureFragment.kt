@@ -1,6 +1,5 @@
 package com.cool.eye.scan
 
-import android.annotation.TargetApi
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
@@ -9,10 +8,10 @@ import android.os.Bundle
 import android.view.View
 import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
+import com.cool.eye.scan.encode.QRCodeUtil
 import com.cool.eye.scan.listener.CaptureParams
 import com.cool.eye.scan.listener.PermissionListener
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
 abstract class CaptureFragment : Fragment(), CaptureParams {
 
   private lateinit var executor: CaptureExecutor
@@ -26,11 +25,14 @@ abstract class CaptureFragment : Fragment(), CaptureParams {
   private var callback: PermissionListener? = null
 
   override fun checkPermission(listener: PermissionListener) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    val target = requireContext().applicationInfo.targetSdkVersion
+    if (target >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       callback = listener
       requestPermissions(arrayOf(android.Manifest.permission.CAMERA), 1001)
     } else {
-      listener.onPermissionGranted()
+      if (QRCodeUtil.isCameraAvailable()) {
+        listener.onPermissionGranted()
+      }
     }
   }
 
@@ -44,17 +46,14 @@ abstract class CaptureFragment : Fragment(), CaptureParams {
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(uri: Uri) {
     executor.parseImage(uri)
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(path: String) {
     executor.parseImage(path)
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(bitmap: Bitmap) {
     executor.parseImage(bitmap)
   }

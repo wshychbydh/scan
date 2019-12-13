@@ -2,7 +2,9 @@ package com.cool.eye.scan.encode
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.hardware.Camera
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.WorkerThread
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
@@ -18,6 +20,28 @@ import java.io.IOException
 import java.util.*
 
 object QRCodeUtil {
+
+  /**
+   * Check camera is available below 6.0
+   */
+  @JvmStatic
+  internal fun isCameraAvailable(): Boolean {
+    var camera: Camera? = null
+    return try {
+      camera = Camera.open()
+      // setParameters is Used for MeiZu MX5.
+      camera!!.parameters = camera!!.parameters
+      true
+    } catch (e: Exception) {
+      Log.e("scan", e.message)
+      false
+    } finally {
+      try {
+        camera?.release()
+      } catch (ignore: Exception) {
+      }
+    }
+  }
 
   /**
    * @param params configs of QRCode
@@ -137,13 +161,13 @@ object QRCodeUtil {
       canvas.scale(
           scaleFactor,
           scaleFactor,
-          (srcWidth / 2).toFloat(),
-          (srcHeight / 2).toFloat()
+          srcWidth / 2f,
+          srcHeight / 2f
       )
       canvas.drawBitmap(
           logo,
-          ((srcWidth - logoWidth) / 2).toFloat(),
-          ((srcHeight - logoHeight) / 2).toFloat(),
+          (srcWidth - logoWidth) / 2f,
+          (srcHeight - logoHeight) / 2f,
           null
       )
 

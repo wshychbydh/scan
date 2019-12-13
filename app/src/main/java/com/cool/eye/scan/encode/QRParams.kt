@@ -41,16 +41,10 @@ class QRParams(
 
     /**
      * @param width the width of QRCode
-     */
-    fun setWidth(width: Int): Builder {
-      this.width = width
-      return this
-    }
-
-    /**
      * @param height the height of QRCode
      */
-    fun setHeight(height: Int): Builder {
+    fun setSize(width: Int, height: Int): Builder {
+      this.width = width
       this.height = height
       return this
     }
@@ -98,7 +92,7 @@ class QRParams(
     /**
      * @param color the color of qrcode
      */
-    fun setQrCorlor(@ColorInt color: Int): Builder {
+    fun setQrColor(@ColorInt color: Int): Builder {
       this.qrColor = color
       return this
     }

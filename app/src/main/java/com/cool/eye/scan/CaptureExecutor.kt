@@ -1,13 +1,11 @@
 package com.cool.eye.scan
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.net.Uri
-import android.os.Build
 import android.os.Vibrator
 import android.view.SurfaceHolder
 import androidx.annotation.RequiresPermission
@@ -32,7 +30,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
 class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, DecodeListener, LifecycleObserver {
 
   private val context: Context
@@ -180,7 +177,6 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     cameraManager?.enableFlashlight()
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(uri: Uri) {
     GlobalScope.launch {
       val path = withContext(Dispatchers.IO) {
@@ -194,7 +190,6 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(path: String) {
     GlobalScope.launch {
       val cameraBitmap = withContext(Dispatchers.IO) { DocumentUtil.getBitmap(path) }
@@ -206,7 +201,6 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     }
   }
 
-  @TargetApi(Build.VERSION_CODES.KITKAT)
   fun parseImage(bitmap: Bitmap) {
     decodeThread?.cancel()
     val width = bitmap.width
