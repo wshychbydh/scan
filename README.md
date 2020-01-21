@@ -121,7 +121,15 @@
     val bitmap = QRCodeUtil.createQRImageAsync(params)  //异步调用
     
 ```
+
+#####   
+ 
+**Demo地址：(https://github.com/wshychbydh/SampleDemo)**    
     
-#### 联系方式 wshychbydh@gmail.com
+##
+
+###### **欢迎fork，更希望你能贡献commit.** (*￣︶￣)    
+
+###### 联系方式 wshychbydh@gmail.com
 
 [![](https://jitpack.io/v/wshychbydh/scan.svg)](https://jitpack.io/#wshychbydh/scan)
