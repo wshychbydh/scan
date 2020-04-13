@@ -43,7 +43,7 @@
     val captureListener = object :CaptureListener{
 
     override fun onPreviewSucceed() {
-      //预测成功回调
+      //预览成功回调
     }
     
     override fun onScanFailed(throwable: Throwable) {
@@ -95,7 +95,7 @@
 
   override fun getSurfaceView(): SurfaceView = surfaceView
     
-  //其他支持的操作同自定义方式
+  //其他支持的操作同上
 ```
 
 6、扩展功能类 (QRCodeUtil)
