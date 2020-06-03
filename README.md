@@ -106,10 +106,12 @@
         .setSize(width, height)   //（可选）二维码大小，默认500x500
         .setMargin()              //（可选）二维码边距，默认2px
         .setSavePath()            //（可选）二维码保存路径
-        .setSaveQuality()         //（可选）图片质量（0-100）
-        .setGapColor()            //（可选）间隙颜色，默认白色
-        .setQrColor()             //（可选）二维码颜色，默认黑色
+        .setSaveQuality()         //（可选）图片质量（0-100)，默认100
+        .setGapColor()            //（可选）间隙颜色，默认Color.WHITE
+        .setQrColor()             //（可选）二维码颜色，默认Color.BLACK
         .setSaveFormat()          //（可选）保存格式，默认PNG
+        .setBitmapConfig()        //（可选）Bitmap的Config，默认RGB_565
+        .setLogoScale()           //（可选）Logo相对bitmap的比例，默认5.0
         .build()
 
     QRCodeUtil.createQRImage(params) {
