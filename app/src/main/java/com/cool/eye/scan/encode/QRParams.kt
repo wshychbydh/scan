@@ -8,16 +8,18 @@ import androidx.annotation.ColorInt
  *Created by ycb on 2019/10/28 0028
  */
 class QRParams(
-    val content: String, //content of QRCode
-    val width: Int = 500,  //width of QRCode
-    val height: Int = 500, //height of QRCode
-    val margin: Int = 2,  //the margin of QRCode to border
-    val logo: Bitmap? = null,  //logo will be set on QRCode
-    @ColorInt val qrColor: Int = Color.BLACK, //the color of qr
-    @ColorInt val gapColor: Int = Color.WHITE, //the color of gap
-    val savePath: String? = null,  //QRCode will be saved to
-    val saveFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,  // The format of the compressed image
-    val saveQuality: Int = 100  //Hint to the compressor, 0-100.
+    internal val content: String, //content of QRCode
+    internal var width: Int = 500,  //width of QRCode
+    internal var height: Int = 500, //height of QRCode
+    internal var margin: Int = 2,  //the margin of QRCode to border
+    internal var logo: Bitmap? = null,  //logo will be set on QRCode
+    internal var qrColor: Int = Color.BLACK, //the color of qr
+    internal var gapColor: Int = Color.WHITE, //the color of gap
+    internal var savePath: String? = null,  //QRCode will be saved to
+    internal var saveFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,  // The format of the compressed image
+    internal var bitmapConfig: Bitmap.Config = Bitmap.Config.RGB_565,  // The config of bitmap
+    internal var saveQuality: Int = 100,  //Hint to the compressor, 0-100.
+    internal var logoScale: Float = 5f
 ) {
   fun isValid(): Boolean {
     return content.isNotEmpty()
@@ -28,32 +30,24 @@ class QRParams(
         && margin < height / 2
   }
 
-  class Builder(private val content: String) {
-    var width: Int = 500  //width of QRCode
-    var height: Int = 500 //height of QRCode
-    var margin: Int = 2  //the margin of QRCode to border
-    var logo: Bitmap? = null  //logo will be set on QRCode
-    var savePath: String? = null  //QRCode will be saved to
-    var saveFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG  // The format of the compressed image
-    var quality: Int = 100  //Hint to the compressor, 0-100.
-    var qrColor: Int = Color.BLACK //the color of qr
-    var gapColor: Int = Color.WHITE //the color of gap
+  class Builder(content: String) {
+    private val params = QRParams(content)
 
     /**
-     * @param width the width of QRCode
-     * @param height the height of QRCode
+     * @param width the width of QRCode, default 500
+     * @param height the height of QRCode, default 500
      */
     fun setSize(width: Int, height: Int): Builder {
-      this.width = width
-      this.height = height
+      params.width = width
+      params.height = height
       return this
     }
 
     /**
-     * @param margin the margin of QRCode to border
+     * @param margin the margin of QRCode to border, default 2
      */
     fun setMargin(margin: Int): Builder {
-      this.margin = margin
+      params.margin = margin
       return this
     }
 
@@ -61,7 +55,7 @@ class QRParams(
      * @param logo the logo will be set on QRCode
      */
     fun setLogo(logo: Bitmap): Builder {
-      this.logo = logo
+      params.logo = logo
       return this
     }
 
@@ -69,55 +63,59 @@ class QRParams(
      * @param path the QRCode will be saved to
      */
     fun setSavePath(path: String): Builder {
-      this.savePath = path
+      params.savePath = path
       return this
     }
 
     /**
-     * @param format The format for the qrcode will be saved
+     * @param format The format for the qrcode will be saved, default PNG
      */
     fun setSaveFormat(format: Bitmap.CompressFormat): Builder {
-      this.saveFormat = format
+      params.saveFormat = format
       return this
     }
 
     /**
-     * @param quality The quality for the qrcode will be saved
+     * @param format The format for the qrcode will be saved, default RGB_565
+     */
+    fun setBitmapConfig(config: Bitmap.Config): Builder {
+      params.bitmapConfig = config
+      return this
+    }
+
+    /**
+     * @param quality The quality for the qrcode will be saved, default 100
      */
     fun setSaveQuality(quality: Int): Builder {
-      this.quality = quality
+      params.saveQuality = quality
       return this
     }
 
     /**
-     * @param color the color of qrcode
+     * @param color the color of qrcode, default Color.BLACK
      */
     fun setQrColor(@ColorInt color: Int): Builder {
-      this.qrColor = color
+      params.qrColor = color
       return this
     }
 
     /**
-     * @param color the color of gap and background
+     * @param color the color of gap and background, default Color.WHITE
      */
     fun setGapColor(@ColorInt color: Int): Builder {
-      this.gapColor = color
+      params.gapColor = color
       return this
     }
 
-    fun build(): QRParams {
-      return QRParams(
-          content = content,
-          width = width,
-          height = height,
-          margin = margin,
-          logo = logo,
-          savePath = savePath,
-          saveFormat = saveFormat,
-          saveQuality = quality,
-          qrColor = qrColor,
-          gapColor = gapColor
-      )
+    /**
+     * ratio = bitmap.width / logo.width / scale
+     * @param scale The scale of the logo to the QR code, default 5.0
+     */
+    fun setLogoScale(scale: Float): Builder {
+      params.logoScale = scale
+      return this
     }
+
+    fun build(): QRParams = params
   }
 }

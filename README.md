@@ -100,7 +100,7 @@
 
 6、扩展功能类 (QRCodeUtil)
 ```
-    //构建二维码参数
+    //构建二维码参数（注：如果参数无效，将返回null的bitmap）
     val params = QRParams.Builder(content)  //（必传）二维码内容 
         .setLogo()                //（可选）设置logo
         .setSize(width, height)   //（可选）二维码大小，默认500x500

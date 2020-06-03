@@ -30,7 +30,7 @@ object QRCodeUtil {
     return try {
       camera = Camera.open()
       // setParameters is Used for MeiZu MX5.
-      camera!!.parameters = camera!!.parameters
+      camera.parameters = camera.parameters
       true
     } catch (e: Exception) {
       Log.e("scan", e.message)
@@ -71,10 +71,11 @@ object QRCodeUtil {
   }
 
   /**
-   *  @param params configs of QRCode
+   *  @param params configs of QRCode. Null is returned if the parameter is invalid
    *  @return bitmap on calling thread
    */
   @JvmStatic
+  @Throws
   @WorkerThread
   fun createQRImageAsync(params: QRParams): Bitmap? {
 
@@ -107,14 +108,15 @@ object QRCodeUtil {
         }
       }
 
-      var bitmap: Bitmap? = Bitmap.createBitmap(widthPix, heightPix, Bitmap.Config.ARGB_8888)
+      var bitmap: Bitmap? = Bitmap.createBitmap(widthPix, heightPix, params.bitmapConfig)
       bitmap!!.setPixels(pixels, 0, widthPix, 0, 0, widthPix, heightPix)
 
       if (params.logo != null) {
-        bitmap = addLogo(bitmap, params.logo)
+        bitmap = addLogo(bitmap, params.logo, params.logoScale, params.bitmapConfig)
       }
 
-      //必须使用compress方法将bitmap保存到文件中再进行读取。直接返回的bitmap是没有任何压缩的，内存消耗巨大！
+      // The bitmap should be save to a file with the compress method before it can be read.
+      // The bitmap returned directly does not have any compression, the memory consumption is huge!
       if (bitmap != null && params.savePath != null) {
         bitmap.compress(
             params.saveFormat,
@@ -131,7 +133,7 @@ object QRCodeUtil {
     return null
   }
 
-  private fun addLogo(src: Bitmap?, logo: Bitmap?): Bitmap? {
+  private fun addLogo(src: Bitmap?, logo: Bitmap?, scale: Float, config: Bitmap.Config): Bitmap? {
     if (src == null) {
       return null
     }
@@ -153,8 +155,8 @@ object QRCodeUtil {
       return src
     }
 
-    val scaleFactor = srcWidth * 1.0f / 5f / logoWidth.toFloat()
-    var bitmap: Bitmap? = Bitmap.createBitmap(srcWidth, srcHeight, Bitmap.Config.ARGB_8888)
+    val scaleFactor = srcWidth * 1.0f / scale / logoWidth.toFloat()
+    var bitmap: Bitmap? = Bitmap.createBitmap(srcWidth, srcHeight, config)
     try {
       val canvas = Canvas(bitmap!!)
       canvas.drawBitmap(src, 0f, 0f, null)
