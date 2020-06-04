@@ -7,6 +7,7 @@ group = 'com.github.wshychbydh'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
+    resourcePrefix 'scan_'
     defaultConfig {
         minSdkVersion 8
         targetSdkVersion 29
