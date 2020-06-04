@@ -61,9 +61,11 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
 
   private var beepManager: BeepManager? = null
   private var cameraManager: CameraManager? = null
+
   @Volatile
   private var decodeThread: DecodeThread? = null
   private var previewFrameRect: Rect? = null
+
   @Volatile
   private var isDecoding = false
 
@@ -86,6 +88,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         cameraManager!!.initCamera(holder)
         if (!cameraManager!!.isCameraAvailable) {
           params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_camera_failed)))
+          cameraManager = null
           return
         }
         if (playBeep) {
@@ -108,9 +111,12 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
 
   override fun surfaceDestroyed(holder: SurfaceHolder) {
     isPreviewed = false
+    holder.removeCallback(this)
     cameraManager?.stopPreview()
     decodeThread?.cancel()
     cameraManager?.release()
+    cameraManager = null
+    decodeThread = null
   }
 
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
@@ -146,7 +152,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
       params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_decode_failed)))
     }
     isDecoding = false
-    cameraManager!!.requestPreviewFrameShot()
+    cameraManager?.requestPreviewFrameShot()
   }
 
   override fun foundPossibleResultPoint(point: ResultPoint) {

@@ -134,6 +134,7 @@ public class CameraManager implements Camera.AutoFocusCallback, Camera.PreviewCa
   public void release() {
     if (mCamera != null) {
       mCamera.setOneShotPreviewCallback(null);
+      mCamera.setPreviewCallback(null);
       mCamera.release();
       mState = CameraState.CLOSED;
     }

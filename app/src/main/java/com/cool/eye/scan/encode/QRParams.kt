@@ -60,6 +60,7 @@ class QRParams(
     }
 
     /**
+     * You should be check write permission
      * @param path the QRCode will be saved to
      */
     fun setSavePath(path: String): Builder {
