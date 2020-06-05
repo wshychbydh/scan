@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <declare-styleable name="CaptureView">
-    <attr name="maskColor" format="dimension|color" />
-    <attr name="possiblePointColor" format="dimension|color" />
-    <attr name="possiblePointAliveDuration" format="dimension|integer" />
-    <attr name="scanDuration" format="dimension|integer" />
-    <attr name="scannerDrawable" format="reference" />
-    <attr name="frameDrawable" format="reference" />
+  <declare-styleable name="scan_captureView">
+    <attr name="scan_mask_color" format="dimension|color" />
+    <attr name="scan_possible_point_color" format="dimension|color" />
+    <attr name="scan_possible_point_alive_duration" format="dimension|integer" />
+    <attr name="scan_duration" format="dimension|integer" />
+    <attr name="scan_scanner_drawable" format="reference" />
+    <attr name="scan_frame_drawable" format="reference" />
   </declare-styleable>
 </resources>

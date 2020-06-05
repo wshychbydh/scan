@@ -87,7 +87,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         cameraManager!!.setPreviewFrameShotListener(this@CaptureExecutor)
         cameraManager!!.initCamera(holder)
         if (!cameraManager!!.isCameraAvailable) {
-          params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_camera_failed)))
+          params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.scan_capture_camera_failed)))
           cameraManager = null
           return
         }
@@ -149,7 +149,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
 
   override fun onDecodeFailed(source: LuminanceSource) {
     if (source is RGBLuminanceSourcePixels) {
-      params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.capture_decode_failed)))
+      params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.scan_capture_decode_failed)))
     }
     isDecoding = false
     cameraManager?.requestPreviewFrameShot()
@@ -189,7 +189,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         DocumentUtil.getPath(context, uri)
       }
       if (path.isNullOrEmpty()) {
-        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
+        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.scan_image_path_error)))
       } else {
         parseImage(path)
       }
@@ -200,7 +200,7 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     GlobalScope.launch {
       val cameraBitmap = withContext(Dispatchers.IO) { DocumentUtil.getBitmap(path) }
       if (cameraBitmap == null) {
-        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.image_path_error)))
+        params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.scan_image_path_error)))
       } else {
         parseImage(cameraBitmap)
       }

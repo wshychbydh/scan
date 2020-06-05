@@ -59,21 +59,21 @@ public class CaptureView extends View {
     paint = new Paint();
     paint.setAntiAlias(true);
     possiblePoints = new LinkedList<>();
-    int frameResId = R.drawable.qrcode_scan_frame;
-    int scannerResId = R.drawable.qrcode_scan_scaner;
+    int frameResId = R.drawable.scan_qrcode_frame;
+    int scannerResId = R.drawable.scan_qrcode_scaner;
     if (attrs != null) {
-      TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.CaptureView);
-      maskColor = array.getColor(R.styleable.CaptureView_maskColor, MASK_COLOR);
+      TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.scan_captureView);
+      maskColor = array.getColor(R.styleable.scan_captureView_scan_mask_color, MASK_COLOR);
       possiblePointColor = array
-          .getColor(R.styleable.CaptureView_possiblePointColor, POSSIBLE_POINT_COLOR);
+          .getColor(R.styleable.scan_captureView_scan_possible_point_color, POSSIBLE_POINT_COLOR);
       possiblePointAliveDuration = array
-          .getInt(R.styleable.CaptureView_possiblePointAliveDuration,
+          .getInt(R.styleable.scan_captureView_scan_possible_point_alive_duration,
               POSSIBLE_POINT_ALIVE_DURATION);
-      scanDuration = array.getInt(R.styleable.CaptureView_scanDuration, SCAN_DURATION);
+      scanDuration = array.getInt(R.styleable.scan_captureView_scan_duration, SCAN_DURATION);
       frameResId = array
-          .getResourceId(R.styleable.CaptureView_frameDrawable, R.drawable.qrcode_scan_frame);
+          .getResourceId(R.styleable.scan_captureView_scan_frame_drawable, R.drawable.scan_qrcode_frame);
       scannerResId = array
-          .getResourceId(R.styleable.CaptureView_scannerDrawable, R.drawable.qrcode_scan_scaner);
+          .getResourceId(R.styleable.scan_captureView_scan_scanner_drawable, R.drawable.scan_qrcode_scaner);
       array.recycle();
     }
 

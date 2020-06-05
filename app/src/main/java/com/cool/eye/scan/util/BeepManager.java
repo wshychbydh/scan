@@ -77,7 +77,7 @@ public final class BeepManager implements
     mediaPlayer.setOnCompletionListener(this);
     mediaPlayer.setOnErrorListener(this);
     try {
-      AssetFileDescriptor file = context.getResources().openRawResourceFd(R.raw.beep);
+      AssetFileDescriptor file = context.getResources().openRawResourceFd(R.raw.scan_beep);
       try {
         mediaPlayer.setDataSource(file.getFileDescriptor(), file.getStartOffset(), file
             .getLength());

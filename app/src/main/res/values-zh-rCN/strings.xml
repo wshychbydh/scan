@@ -1,5 +1,5 @@
 <resources>
-  <string name="capture_camera_failed">照相机不可用</string>
-  <string name="capture_decode_failed">未找到二维码</string>
-  <string name="image_path_error">图片无效</string>
+  <string name="scan_capture_camera_failed">照相机不可用</string>
+  <string name="scan_capture_decode_failed">未找到二维码</string>
+  <string name="scan_image_path_error">图片无效</string>
 </resources>
