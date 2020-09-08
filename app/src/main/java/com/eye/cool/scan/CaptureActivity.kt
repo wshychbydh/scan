@@ -83,6 +83,14 @@ abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
   }
 
   /**
+   * Call after CaptureListener.onPreviewSucceed
+   * <uses-permission android:name="android.permission.FLASHLIGHT"/>
+   */
+  fun toggleFlashlight() {
+    executor.toggleFlashlight()
+  }
+
+  /**
    * <uses-permission android:name="android.permission.VIBRATE"/>
    */
   fun vibrator(enable: Boolean) {

@@ -4,7 +4,7 @@
 
 #### 使用方法：
 
-1、在root目录的build.gradle目录中添加
+1. 在root目录的build.gradle目录中添加
 ```
     allprojects {
         repositories {
@@ -14,38 +14,70 @@
     }
 ```
 
-2、在项目的build.gradle中添加依赖
+2. 在项目的build.gradle中添加依赖
 ```
     dependencies {
         implementation 'com.github.wshychbydh:scan:Tag'
     }
 ```
 
-3、添加布局，布局中包含SurfaceView 和 CaptureView，如：
+3. 添加布局，布局中包含SurfaceView 和 CaptureView，例如：
 ```
- <SurfaceView
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <SurfaceView                              //预览区域
     android:id="@+id/surfaceView"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 
- <com.cool.eye.scan.view.CaptureView
+  <com.eye.cool.scan.view.CaptureView       //扫码区域
     android:id="@+id/captureView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:frameDrawable="drawable"            // 外边框
-    app:possiblePointColor="color"          // 扫码框内闪点的颜色
-    app:scanDuration="scan"                 // 扫码条单次动画时长
-    app:scannerDrawable="drawable" />       // 扫码条
+    app:scan_frame_drawable="drawable"      // 外边框
+    app:scan_possible_point_color="color"   // 扫码框内闪点的颜色
+    app:scan_duration="integer"             // 扫码条单次动画时长
+    app:scan_scanner_drawable="drawable" /> // 扫码条
+
+  <Button
+    android:id="@+id/albumBtn"              //选择相册(可选)
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    android:background="@null"
+    android:text="Album"
+    android:textColor="@android:color/white"
+    android:textSize="15sp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent" />
+
+  <Button
+    android:id="@+id/flashlightBtn"         //闪光灯(可选)
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    android:background="@null"
+    android:text="Flashlightco"
+    android:textColor="@android:color/white"
+    android:textSize="15sp"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 ```
 
-4、创建实例CaptureListener
+4. 创建实例CaptureListener
 ```
     val captureListener = object :CaptureListener{
 
     override fun onPreviewSucceed() {
       //预览成功回调
     }
-    
+
     override fun onScanFailed(throwable: Throwable) {
       //扫码失败回调
     }
@@ -56,13 +88,11 @@
   }
 ```
 
-5、配置参数 （以下两种方式选一）
+5. 配置参数 （以下两种方式选一）
 
-1）自定义构建CaptureExecutor
+* 自定义构建CaptureExecutor
 
-```   
- val executor = CaptureExecutor(activity, params)  
- 
+```
  val params = object :CaptureParams{
     override fun checkPermission(listener: PermissionListener) {
       //1、请求权限相机权限（android.Manifest.permission.CAMERA）
@@ -75,33 +105,37 @@
     override fun getCaptureView(): CaptureView = captureView
 
     override fun getSurfaceView(): SurfaceView = surfaceView
-    
+
   }
-  
-  //其他支持的操作  
-  executor.parseImage(path|uri|bitmap)  //解析图片
-  executor.isFlashEnable()      //判断闪光灯是否可用
-  executor.disableFlashlight()  //关闭闪光灯
-  executor.enableFlashlight()   //开启闪光灯，需要FLASHLIGHT权限
-  executor.vibrator(Boolean)    //扫码成功时是否震动，默认true
-  executor.playBeep(Boolean)    //扫码成功时是否播放提示声，默认true
+
+  val executor = CaptureExecutor("LifecycleOwner", params)
+  //LifecycleOwner必须是androidx包(ComponentActivity或Fragment)的子类
+  //executor会自动绑定到LifecycleOwner的onCreate和onDestroy实现预览和并扫码
+  //其他支持的操作
+  executor.parseImage(path|uri|bitmap) //解析图片
+  executor.isFlashEnable()             //判断闪光灯是否可用
+  executor.disableFlashlight()         //关闭闪光灯
+  executor.enableFlashlight()          //开启闪光灯，需添加FLASHLIGHT权限
+  executor.toggleFlashlight()          //切换闪光灯，需添加FLASHLIGHT权限
+  executor.vibrator(Boolean)           //扫码成功时是否震动，默认true
+  executor.playBeep(Boolean)           //扫码成功时是否播放提示声，默认true
 ```
 
-2）直接继承CaptureFragment或CaptureActivity，并实现以下抽象方法，如：
+* 直接继承CaptureFragment或CaptureActivity，并实现以下抽象方法，如：
 ```
   override fun getCaptureListener(): CaptureListener = captureListener
 
   override fun getCaptureView(): CaptureView = captureView
 
   override fun getSurfaceView(): SurfaceView = surfaceView
-    
+
   //其他支持的操作同上
 ```
 
-6、扩展功能类 (QRCodeUtil)
+6. 生成二维码 (QRCodeUtil)
 ```
     //构建二维码参数（注：如果参数无效，将返回null的bitmap）
-    val params = QRParams.Builder(content)  //（必传）二维码内容 
+    val params = QRParams.Builder(content)  //（必传）二维码内容
         .setLogo()                //（可选）设置logo
         .setSize(width, height)   //（可选）二维码大小，默认500x500
         .setMargin()              //（可选）二维码边距，默认2px
@@ -116,21 +150,21 @@
 
     QRCodeUtil.createQRImage(params) {
       //主线程调用
-    } 
+    }
 
-    QRCodeUtil.createQRImage(params)     //协程中调用
-    
-    val bitmap = QRCodeUtil.createQRImageAsync(params)  //异步调用
-    
+    val bitmap = QRCodeUtil.createQRImage(params)       //协程中调用
+
+    val bitmap = QRCodeUtil.createQRImageAsync(params)  //非主线程调用
+
 ```
 
-#####   
- 
-**Demo地址：(https://github.com/wshychbydh/SampleDemo)**    
-    
+#####
+
+**Demo地址：(https://github.com/wshychbydh/SampleDemo)**
+
 ##
 
-###### **欢迎fork，更希望你能贡献commit.** (*￣︶￣)    
+###### **欢迎fork，期待你的宝贵意见** (*￣︶￣)
 
 ###### 联系方式 wshychbydh@gmail.com
 

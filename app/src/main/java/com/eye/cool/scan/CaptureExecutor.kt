@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Vibrator
 import android.view.SurfaceHolder
+import androidx.activity.ComponentActivity
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -44,7 +45,7 @@ class CaptureExecutor : SurfaceHolder.Callback,
   constructor(context: Context, params: CaptureParams) {
     this.context = context
     this.params = params
-    if (context is FragmentActivity) {
+    if (context is ComponentActivity) {
       context.lifecycle.addObserver(this)
     }
   }
@@ -67,24 +68,20 @@ class CaptureExecutor : SurfaceHolder.Callback,
   private var vibrator = true
   private var playBeep = true
 
-  @Volatile
-  private var isPreviewed = false
+  @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
+  private fun onCreate() {
+    params.getSurfaceView().holder.addCallback(this)
+  }
 
   @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
   private fun onDestroy() {
-    scope.cancel()
-  }
-
-  @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-  private fun onResume() {
-    if (!isPreviewed) {
-      params.getSurfaceView().holder.addCallback(this)
-    }
-  }
-
-  @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
-  private fun onPause() {
-    isPreviewed = false
+    params.getSurfaceView().holder.removeCallback(this)
+    cameraManager?.stopPreview()
+    cameraManager?.release()
+    cameraManager = null
+    decodeThread?.cancel()
+    decodeThread = null
+    isDecoding = false
   }
 
   override fun surfaceCreated(holder: SurfaceHolder) {
@@ -104,7 +101,6 @@ class CaptureExecutor : SurfaceHolder.Callback,
           beepManager!!.updatePrefs()
         }
         cameraManager!!.startPreview()
-        isPreviewed = true
         params.getCaptureListener().onPreviewSucceed()
         if (!isDecoding) {
           cameraManager!!.requestPreviewFrameShot()
@@ -114,18 +110,11 @@ class CaptureExecutor : SurfaceHolder.Callback,
   }
 
   override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-    //unsupported
+    //ignore
   }
 
   override fun surfaceDestroyed(holder: SurfaceHolder) {
-    holder.removeCallback(this)
-    cameraManager?.stopPreview()
-    cameraManager?.release()
-    cameraManager = null
-    decodeThread?.cancel()
-    decodeThread = null
-    isPreviewed = false
-    isDecoding = false
+    //ignore
   }
 
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
@@ -172,7 +161,6 @@ class CaptureExecutor : SurfaceHolder.Callback,
    * Call after CaptureListener.onPreviewSucceed
    */
   fun isFlashEnable(): Boolean {
-    if (!isPreviewed) return false
     return cameraManager?.isFlashlightAvailable ?: false
   }
 
@@ -180,7 +168,6 @@ class CaptureExecutor : SurfaceHolder.Callback,
    * Call after CaptureListener.onPreviewSucceed
    */
   fun disableFlashlight() {
-    if (!isPreviewed) return
     cameraManager?.disableFlashlight()
   }
 
@@ -188,8 +175,11 @@ class CaptureExecutor : SurfaceHolder.Callback,
    * Call after CaptureListener.onPreviewSucceed
    */
   fun enableFlashlight() {
-    if (!isPreviewed) return
     cameraManager?.enableFlashlight()
+  }
+
+  fun toggleFlashlight() {
+    cameraManager?.toggleFlashlight()
   }
 
   fun parseImage(uri: Uri) {

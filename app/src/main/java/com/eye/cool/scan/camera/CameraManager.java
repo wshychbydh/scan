@@ -119,6 +119,21 @@ public class CameraManager implements Camera.AutoFocusCallback, Camera.PreviewCa
     mCamera.setParameters(parameters);
   }
 
+  public void toggleFlashlight() {
+    System.out.println("==toggleFlashlight==>");
+    if (mCamera == null) {
+      return;
+    }
+    Camera.Parameters parameters = mCamera.getParameters();
+    System.out.println("==mode==>${parameters.getFlashMode()}");
+    if (Camera.Parameters.FLASH_MODE_TORCH.equals(parameters.getFlashMode())) {
+      parameters.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+    } else {
+      parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+    }
+    mCamera.setParameters(parameters);
+  }
+
   public void startPreview() {
     if (mCamera != null) {
       mState = CameraState.PREVIEW;
