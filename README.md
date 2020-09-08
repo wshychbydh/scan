@@ -17,7 +17,7 @@
 2、在项目的build.gradle中添加依赖
 ```
     dependencies {
-        implementation 'com.github.wshychbydh:scan:1.2.6'
+        implementation 'com.github.wshychbydh:scan:Tag'
     }
 ```
 
