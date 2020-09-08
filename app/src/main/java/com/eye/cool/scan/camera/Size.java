@@ -1,4 +1,4 @@
-package com.cool.eye.scan.camera;
+package com.eye.cool.scan.camera;
 
 public class Size {
 	public Size(int w, int h) {

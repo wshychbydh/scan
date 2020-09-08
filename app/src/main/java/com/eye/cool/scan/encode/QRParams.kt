@@ -1,4 +1,4 @@
-package com.cool.eye.scan.encode
+package com.eye.cool.scan.encode
 
 import android.graphics.Bitmap
 import android.graphics.Color

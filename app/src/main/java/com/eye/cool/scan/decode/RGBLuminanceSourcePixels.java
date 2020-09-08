@@ -1,7 +1,7 @@
-package com.cool.eye.scan.decode;
+package com.eye.cool.scan.decode;
 
 import android.graphics.Bitmap;
-import com.cool.eye.scan.camera.Size;
+import com.eye.cool.scan.camera.Size;
 
 
 public class RGBLuminanceSourcePixels extends LuminanceSource {

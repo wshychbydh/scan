@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.cool.eye.scan.decode;
+package com.eye.cool.scan.decode;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import com.cool.eye.scan.camera.Size;
+import com.eye.cool.scan.camera.Size;
 
 public class PlanarYUVLuminanceSource extends LuminanceSource {
 

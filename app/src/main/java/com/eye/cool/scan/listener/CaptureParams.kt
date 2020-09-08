@@ -1,7 +1,7 @@
-package com.cool.eye.scan.listener
+package com.eye.cool.scan.listener
 
 import android.view.SurfaceView
-import com.cool.eye.scan.view.CaptureView
+import com.eye.cool.scan.view.CaptureView
 
 interface CaptureParams {
 

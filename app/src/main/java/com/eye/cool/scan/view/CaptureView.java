@@ -1,4 +1,4 @@
-package com.cool.eye.scan.view;
+package com.eye.cool.scan.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -10,7 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
 import androidx.annotation.DrawableRes;
-import com.cool.eye.scan.R;
+import com.eye.cool.scan.R;
 import com.google.zxing.ResultPoint;
 import java.util.LinkedList;
 

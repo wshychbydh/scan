@@ -1,4 +1,4 @@
-package com.cool.eye.scan.decode;
+package com.eye.cool.scan.decode;
 
 import android.graphics.Bitmap;
 

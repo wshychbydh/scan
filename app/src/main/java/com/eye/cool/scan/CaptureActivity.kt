@@ -1,15 +1,17 @@
-package com.cool.eye.scan
+package com.eye.cool.scan
 
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.annotation.CallSuper
 import androidx.appcompat.app.AppCompatActivity
-import com.cool.eye.scan.encode.QRCodeUtil
-import com.cool.eye.scan.listener.CaptureParams
-import com.cool.eye.scan.listener.PermissionListener
+import com.eye.cool.scan.encode.QRCodeUtil
+import com.eye.cool.scan.listener.CaptureParams
+import com.eye.cool.scan.listener.PermissionListener
+
 
 abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
 
@@ -18,6 +20,7 @@ abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
   @CallSuper
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     executor = CaptureExecutor(this, this)
   }
 
@@ -73,11 +76,15 @@ abstract class CaptureActivity : AppCompatActivity(), CaptureParams {
 
   /**
    * Call after CaptureListener.onPreviewSucceed
+   * <uses-permission android:name="android.permission.FLASHLIGHT"/>
    */
   fun enableFlashlight() {
     executor.enableFlashlight()
   }
 
+  /**
+   * <uses-permission android:name="android.permission.VIBRATE"/>
+   */
   fun vibrator(enable: Boolean) {
     executor.vibrator(enable)
   }

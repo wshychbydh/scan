@@ -1,4 +1,4 @@
-package com.cool.eye.scan
+package com.eye.cool.scan
 
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -6,11 +6,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.annotation.CallSuper
 import androidx.fragment.app.Fragment
-import com.cool.eye.scan.encode.QRCodeUtil
-import com.cool.eye.scan.listener.CaptureParams
-import com.cool.eye.scan.listener.PermissionListener
+import com.eye.cool.scan.encode.QRCodeUtil
+import com.eye.cool.scan.listener.CaptureParams
+import com.eye.cool.scan.listener.PermissionListener
 
 abstract class CaptureFragment : Fragment(), CaptureParams {
 
@@ -19,6 +20,7 @@ abstract class CaptureFragment : Fragment(), CaptureParams {
   @CallSuper
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
+    requireActivity().window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     executor = CaptureExecutor(this, this)
   }
 
@@ -74,6 +76,7 @@ abstract class CaptureFragment : Fragment(), CaptureParams {
 
   /**
    * Call after CaptureListener.onPreviewSucceed
+   * <uses-permission android:name="android.permission.FLASHLIGHT"/>
    */
   fun enableFlashlight() {
     executor.enableFlashlight()

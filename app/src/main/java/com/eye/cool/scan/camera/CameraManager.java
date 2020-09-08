@@ -1,4 +1,4 @@
-package com.cool.eye.scan.camera;
+package com.eye.cool.scan.camera;
 
 import android.content.Context;
 import android.graphics.ImageFormat;
@@ -31,7 +31,11 @@ public class CameraManager implements Camera.AutoFocusCallback, Camera.PreviewCa
       switch (msg.what) {
         case MESSAGE_REQUEST_AUTO_FOCUS:
           if (mState == CameraState.PREVIEW && mCamera != null) {
-            mCamera.autoFocus(CameraManager.this);
+            try {
+              mCamera.autoFocus(CameraManager.this);
+            } catch (Exception e) {
+              e.printStackTrace();
+            }
           }
           break;
 

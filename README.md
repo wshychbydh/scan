@@ -82,9 +82,9 @@
   executor.parseImage(path|uri|bitmap)  //解析图片
   executor.isFlashEnable()      //判断闪光灯是否可用
   executor.disableFlashlight()  //关闭闪光灯
-  executor.enableFlashlight()   //开启闪光灯
-  executor.vibrator(Boolean)    //扫码成功时是否震动
-  executor.playBeep(Boolean)    //扫码成功时是否播放提示声
+  executor.enableFlashlight()   //开启闪光灯，需要FLASHLIGHT权限
+  executor.vibrator(Boolean)    //扫码成功时是否震动，默认true
+  executor.playBeep(Boolean)    //扫码成功时是否播放提示声，默认true
 ```
 
 2）直接继承CaptureFragment或CaptureActivity，并实现以下抽象方法，如：

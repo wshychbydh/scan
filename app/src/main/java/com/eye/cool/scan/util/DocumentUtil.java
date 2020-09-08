@@ -1,4 +1,4 @@
-package com.cool.eye.scan.util;
+package com.eye.cool.scan.util;
 
 import android.content.ContentUris;
 import android.content.Context;

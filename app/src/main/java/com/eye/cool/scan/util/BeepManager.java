@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.cool.eye.scan.util;
+package com.eye.cool.scan.util;
 
 import android.app.Activity;
 import android.content.Context;
@@ -22,7 +22,7 @@ import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.util.Log;
-import com.cool.eye.scan.R;
+import com.eye.cool.scan.R;
 import java.io.Closeable;
 import java.io.IOException;
 

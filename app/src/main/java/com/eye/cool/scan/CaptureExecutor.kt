@@ -1,6 +1,5 @@
-package com.cool.eye.scan
+package com.eye.cool.scan
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -8,40 +7,33 @@ import android.graphics.Rect
 import android.net.Uri
 import android.os.Vibrator
 import android.view.SurfaceHolder
-import androidx.annotation.RequiresPermission
 import androidx.core.content.PermissionChecker
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.OnLifecycleEvent
-import com.cool.eye.scan.camera.CameraManager
-import com.cool.eye.scan.camera.PreviewFrameShotListener
-import com.cool.eye.scan.camera.Size
-import com.cool.eye.scan.decode.*
-import com.cool.eye.scan.listener.CaptureParams
-import com.cool.eye.scan.listener.PermissionListener
-import com.cool.eye.scan.util.BeepManager
-import com.cool.eye.scan.util.DocumentUtil
+import com.eye.cool.scan.camera.CameraManager
+import com.eye.cool.scan.camera.PreviewFrameShotListener
+import com.eye.cool.scan.camera.Size
+import com.eye.cool.scan.decode.*
+import com.eye.cool.scan.listener.CaptureParams
+import com.eye.cool.scan.listener.PermissionListener
+import com.eye.cool.scan.util.BeepManager
+import com.eye.cool.scan.util.DocumentUtil
 import com.google.zxing.Result
 import com.google.zxing.ResultPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, DecodeListener, LifecycleObserver {
+class CaptureExecutor : SurfaceHolder.Callback,
+    PreviewFrameShotListener, DecodeListener, LifecycleObserver {
 
   private val context: Context
   private val params: CaptureParams
-
-  constructor(activity: Activity, params: CaptureParams) {
-    this.context = activity
-    this.params = params
-    if (activity is FragmentActivity) {
-      activity.lifecycle.addObserver(this)
-    }
-  }
+  private val scope = MainScope()
 
   constructor(fragment: Fragment, params: CaptureParams) {
     this.context = fragment.requireContext()
@@ -54,16 +46,19 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     this.params = params
     if (context is FragmentActivity) {
       context.lifecycle.addObserver(this)
-    } else {
-      onCreate()
     }
   }
 
+  @Volatile
   private var beepManager: BeepManager? = null
+
+  @Volatile
   private var cameraManager: CameraManager? = null
 
   @Volatile
   private var decodeThread: DecodeThread? = null
+
+  @Volatile
   private var previewFrameRect: Rect? = null
 
   @Volatile
@@ -75,9 +70,21 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   @Volatile
   private var isPreviewed = false
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
-  private fun onCreate() {
-    params.getSurfaceView().holder.addCallback(this)
+  @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+  private fun onDestroy() {
+    scope.cancel()
+  }
+
+  @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+  private fun onResume() {
+    if (!isPreviewed) {
+      params.getSurfaceView().holder.addCallback(this)
+    }
+  }
+
+  @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+  private fun onPause() {
+    isPreviewed = false
   }
 
   override fun surfaceCreated(holder: SurfaceHolder) {
@@ -87,7 +94,8 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
         cameraManager!!.setPreviewFrameShotListener(this@CaptureExecutor)
         cameraManager!!.initCamera(holder)
         if (!cameraManager!!.isCameraAvailable) {
-          params.getCaptureListener().onScanFailed(IllegalStateException(context.getString(R.string.scan_capture_camera_failed)))
+          params.getCaptureListener()
+              .onScanFailed(IllegalStateException(context.getString(R.string.scan_capture_camera_failed)))
           cameraManager = null
           return
         }
@@ -110,13 +118,14 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   }
 
   override fun surfaceDestroyed(holder: SurfaceHolder) {
-    isPreviewed = false
     holder.removeCallback(this)
     cameraManager?.stopPreview()
-    decodeThread?.cancel()
     cameraManager?.release()
     cameraManager = null
+    decodeThread?.cancel()
     decodeThread = null
+    isPreviewed = false
+    isDecoding = false
   }
 
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
@@ -184,10 +193,8 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   }
 
   fun parseImage(uri: Uri) {
-    GlobalScope.launch {
-      val path = withContext(Dispatchers.IO) {
-        DocumentUtil.getPath(context, uri)
-      }
+    scope.launch(Dispatchers.IO) {
+      val path = DocumentUtil.getPath(context, uri)
       if (path.isNullOrEmpty()) {
         params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.scan_image_path_error)))
       } else {
@@ -197,8 +204,8 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
   }
 
   fun parseImage(path: String) {
-    GlobalScope.launch {
-      val cameraBitmap = withContext(Dispatchers.IO) { DocumentUtil.getBitmap(path) }
+    scope.launch(Dispatchers.IO) {
+      val cameraBitmap = DocumentUtil.getBitmap(path)
       if (cameraBitmap == null) {
         params.getCaptureListener().onScanFailed(java.lang.IllegalStateException(context.getString(R.string.scan_image_path_error)))
       } else {
@@ -219,7 +226,6 @@ class CaptureExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Decode
     decodeThread!!.execute()
   }
 
-  @RequiresPermission(android.Manifest.permission.VIBRATE)
   private fun vibrator() {
     if (PermissionChecker.checkSelfPermission(context, android.Manifest.permission.VIBRATE)
         == PermissionChecker.PERMISSION_GRANTED) {
