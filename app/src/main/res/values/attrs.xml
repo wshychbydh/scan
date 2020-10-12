@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <declare-styleable name="scan_captureView">
+  <declare-styleable name="scan_capture_view">
     <attr name="scan_mask_color" format="dimension|color" />
     <attr name="scan_possible_point_color" format="dimension|color" />
     <attr name="scan_possible_point_alive_duration" format="dimension|integer" />
     <attr name="scan_duration" format="dimension|integer" />
     <attr name="scan_scanner_drawable" format="reference" />
     <attr name="scan_frame_drawable" format="reference" />
+
+    <attr name="scan_text_offset_x_ratio" format="dimension|float" />
+    <attr name="scan_text_offset_y_ratio" format="dimension|float" />
+    <attr name="scan_text_color" format="dimension|color" />
+    <attr name="scan_text_size" format="dimension|float" />
+    <attr name="scan_description" format="string|dimension" />
+
+    <attr name="scan_frame_width_ratio" format="float" />
+    <attr name="scan_frame_height_ratio" format="float" />
   </declare-styleable>
 </resources>

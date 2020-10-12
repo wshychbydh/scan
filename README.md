@@ -70,48 +70,35 @@
 </androidx.constraintlayout.widget.ConstraintLayout>
 ```
 
-4. 创建实例CaptureListener
+4. 构建扫码参数：DecodeParams
 ```
-    val captureListener = object :CaptureListener{
+   val params = DecodeParams.Builder() //如未按要求设置，将返回参数无效错误.
+        .captureView(captureView)                 //(必须)
+        .surfaceView(surfaceView)                 //(必须)
+        .decodeListener(object :DecodeListener{   //(必须)
+          override fun onPreviewSucceed() {
+            //预览成功
+          }
 
-    override fun onPreviewSucceed() {
-      //预览成功回调
-    }
+          override suspend fun onScanSucceed(bitmap: Bitmap, content: String) {
+            //扫码成功
+          }
 
-    override fun onScanFailed(throwable: Throwable) {
-      //扫码失败回调
-    }
-
-    override fun onScanSucceed(bitmap: Bitmap, content: String) {
-      //扫码成功回调
-    }
-  }
+          override fun onScanFailed(throwable: Throwable) {
+			//扫码失败
+          }
+        })
+        .permissionChecker(this)     //camera权限请求 (必须), 参考DecodeFragment或DecodeActivity
+        .scaleBitmap()               //是否缩放扫码得到的bitmap，缩放1倍（可选）
+        .build()
 ```
 
 5. 配置参数 （以下两种方式选一）
 
-* 自定义构建CaptureExecutor
+* 自定义构建DecodeExecutor
 
 ```
- val params = object :CaptureParams{
-    override fun checkPermission(listener: PermissionListener) {
-      //1、请求权限相机权限（android.Manifest.permission.CAMERA）
-      //2、若授权失败需自行处理，此时相机不会预览
-      //3、授权成功后调用listener.onPermissionGranted()
-    }
-
-    override fun getCaptureListener(): CaptureListener = captureListener
-
-    override fun getCaptureView(): CaptureView = captureView
-
-    override fun getSurfaceView(): SurfaceView = surfaceView
-
-  }
-
-  val executor = CaptureExecutor("LifecycleOwner", params)
-  //LifecycleOwner必须是androidx包(ComponentActivity或Fragment)的子类
-  //executor会自动绑定到LifecycleOwner的onCreate和onDestroy实现预览和并扫码
-  //其他支持的操作
+  val executor = CaptureExecutor(fragment/context, params)
   executor.parseImage(path|uri|bitmap) //解析图片
   executor.isFlashEnable()             //判断闪光灯是否可用
   executor.disableFlashlight()         //关闭闪光灯
@@ -121,13 +108,9 @@
   executor.playBeep(Boolean)           //扫码成功时是否播放提示声，默认true
 ```
 
-* 直接继承CaptureFragment或CaptureActivity，并实现以下抽象方法，如：
+* 继承DecodeFragment或DecodeActivity，并实现以下抽象方法，如：
 ```
-  override fun getCaptureListener(): CaptureListener = captureListener
-
-  override fun getCaptureView(): CaptureView = captureView
-
-  override fun getSurfaceView(): SurfaceView = surfaceView
+  override fun getDecodeParams() = params
 
   //其他支持的操作同上
 ```

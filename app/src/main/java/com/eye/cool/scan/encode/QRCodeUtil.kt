@@ -61,12 +61,15 @@ object QRCodeUtil {
 
   /**
    *  @param params configs of QRCode
-   *  @return bitmap on IO thread
+   *  @return bitmap on UI thread
    */
   @JvmStatic
   suspend fun createQRImage(params: QRParams): Bitmap? {
     return withContext(Dispatchers.IO) {
-      createQRImageAsync(params)
+      val bitmap = createQRImageAsync(params)
+      withContext(Dispatchers.Main) {
+        bitmap
+      }
     }
   }
 

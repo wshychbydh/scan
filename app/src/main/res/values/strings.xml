@@ -1,5 +1,8 @@
 <resources>
-  <string name="scan_capture_camera_failed">Camera disabled</string>
-  <string name="scan_capture_decode_failed">No QRCode found</string>
+  <string name="scan_camera_failed">Camera disabled</string>
+  <string name="scan_decode_failed">No QRCode found</string>
   <string name="scan_image_path_error">Image invalid</string>
+  <string name="scan_permission_failed">Request camera permission Failed</string>
+  <string name="scan_params_invalid">Decode params invalid</string>
+  <string name="scan_parse_failed">Parse QR code failed</string>
 </resources>

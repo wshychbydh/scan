@@ -3,6 +3,7 @@ package com.eye.cool.scan.encode
 import android.graphics.Bitmap
 import android.graphics.Color
 import androidx.annotation.ColorInt
+import androidx.annotation.RequiresPermission
 
 /**
  *Created by ycb on 2019/10/28 0028
@@ -60,7 +61,8 @@ class QRParams(
     }
 
     /**
-     * You should be check write permission
+     * You should be check permission of
+     * android.Manifest.permission.WRITE_EXTERNAL_STORAGE
      * @param path the QRCode will be saved to
      */
     fun setSavePath(path: String): Builder {
