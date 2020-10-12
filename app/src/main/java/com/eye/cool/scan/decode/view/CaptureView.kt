@@ -159,14 +159,15 @@ class CaptureView : View {
   }
 
   private fun drawPoints(canvas: Canvas) {
+    if (possiblePoints.isEmpty()) return
     paint.color = params.possiblePointColor
     paint.style = Paint.Style.FILL
     val current = System.currentTimeMillis()
     val duration = params.possiblePointAliveDuration
-    while (possiblePoints.size > 0
-        && current - possiblePoints.peek().foundTime >= duration) {
+    while (current - (possiblePoints.peek()?.foundTime ?: current) >= duration) {
       possiblePoints.poll()
     }
+    if (possiblePoints.isEmpty()) return
     for (i in possiblePoints.indices) {
       val point = possiblePoints[i]
       val radius = 5f * (duration - current + point.foundTime) / duration

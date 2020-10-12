@@ -30,6 +30,7 @@ import com.eye.cool.scan.decode.supprot.Decoder
 import com.eye.cool.scan.util.BeepManager
 import com.eye.cool.scan.util.DocumentUtil
 import kotlinx.coroutines.*
+import java.lang.Exception
 
 class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, LifecycleObserver {
 
@@ -73,10 +74,6 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
   @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
   private fun onDestroy() {
     params.surfaceView?.holder?.removeCallback(this)
-    cameraManager?.stopPreview()
-    cameraManager?.release()
-    cameraManager = null
-    isDecoding = false
     scope.cancel()
   }
 
@@ -86,11 +83,7 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
           arrayOf(android.Manifest.permission.CAMERA)
       ) ?: false
       if (result) {
-        withContext(Dispatchers.Main) {
-          if (!execute(holder)) {
-            onScanFailed(DecodeException(CAMERA_FAILED, context.getString(R.string.scan_camera_failed)))
-          }
-        }
+        execute(holder)
       } else {
         onScanFailed(DecodeException(PERMISSION_FAILED, context.getString(R.string.scan_permission_failed)))
       }
@@ -102,7 +95,9 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
   }
 
   override fun surfaceDestroyed(holder: SurfaceHolder) {
-    //ignore
+    cameraManager?.stopPreview()
+    cameraManager?.release()
+    cameraManager = null
   }
 
   override fun onPreviewFrame(data: ByteArray, dataSize: Size) {
@@ -116,22 +111,27 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
     }
   }
 
-  private fun execute(holder: SurfaceHolder): Boolean {
+  private suspend fun execute(holder: SurfaceHolder): Boolean {
     CameraManager(context).apply {
       setPreviewFrameShotListener(this@DecodeExecutor)
-      initCamera(holder)
-      cameraManager = this
-      if (!isCameraAvailable) {
-        cameraManager = null
+      try {
+        initCamera(holder)
+        if (!isCameraAvailable) {
+          onScanFailed(DecodeException(CAMERA_FAILED, context.getString(R.string.scan_camera_failed)))
+          return false
+        }
+        cameraManager = this
+        if (params.playBeep) {
+          beepManager = BeepManager(context)
+          beepManager!!.updatePrefs()
+        }
+        startPreview()
+        params.decodeListener?.onPreviewSucceed()
+        if (!isDecoding) requestPreviewFrameShot()
+      } catch (e: Exception) {
+        e.printStackTrace()
         return false
       }
-      if (params.playBeep) {
-        beepManager = BeepManager(context)
-        beepManager!!.updatePrefs()
-      }
-      startPreview()
-      params.decodeListener?.onPreviewSucceed()
-      if (!isDecoding) requestPreviewFrameShot()
     }
     return true
   }
@@ -167,19 +167,23 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
       if (path.isNullOrEmpty()) {
         onScanFailed(DecodeException(IMAGE_PATH_ERROR, context.getString(R.string.scan_image_path_error)))
       } else {
-        parseImage(path)
+        parseImageSync(path)
       }
     }
   }
 
   fun parseImage(path: String) {
     scope.launch(Dispatchers.IO) {
-      val cameraBitmap = DocumentUtil.getBitmap(path)
-      if (cameraBitmap == null) {
-        onScanFailed(DecodeException(IMAGE_PATH_ERROR, context.getString(R.string.scan_image_path_error)))
-      } else {
-        parseImage(cameraBitmap)
-      }
+      parseImageSync(path)
+    }
+  }
+
+  private suspend fun parseImageSync(path: String) {
+    val cameraBitmap = DocumentUtil.getBitmap(path)
+    if (cameraBitmap == null) {
+      onScanFailed(DecodeException(IMAGE_PATH_ERROR, context.getString(R.string.scan_image_path_error)))
+    } else {
+      parseImageSync(cameraBitmap)
     }
   }
 
@@ -187,35 +191,37 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
     if (isDecoding) return
     isDecoding = true
     scope.launch(Dispatchers.IO) {
-      val width = bitmap.width
-      val height = bitmap.height
-      val pixels = IntArray(width * height)
-      bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
-      val luminanceSource = RGBLuminanceSourcePixels(pixels, Size(width, height))
-      decode(luminanceSource, true)
+      parseImageSync(bitmap)
     }
   }
 
+  private suspend fun parseImageSync(bitmap: Bitmap) {
+    val width = bitmap.width
+    val height = bitmap.height
+    val pixels = IntArray(width * height)
+    bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+    val luminanceSource = RGBLuminanceSourcePixels(pixels, Size(width, height))
+    decode(luminanceSource, true)
+  }
+
   private suspend fun decode(source: LuminanceSource, isParseImage: Boolean = false) {
-    isDecoding = true
-    val result = Decoder.decode(source) {
-      params.captureView?.addPossibleResultPoint(it)
-    }
-    if (result == null) {
-      if (isParseImage) {
-        onScanFailed(DecodeException(PARSE_FAILED, context.getString(R.string.scan_parse_failed)))
-      } else {
-        cameraManager?.requestPreviewFrameShot()
+    try {
+      isDecoding = true
+      val result = Decoder.decode(source) {
+        params.captureView?.addPossibleResultPoint(it)
       }
-    } else {
-      if (result.isValid()) {
+      if (result == null || !result.isValid()) {
+        if (isParseImage) {
+          onScanFailed(DecodeException(PARSE_FAILED, context.getString(R.string.scan_parse_failed)))
+        } else {
+          cameraManager?.requestPreviewFrameShot()
+        }
+      } else {
         onDecodeSuccess(result)
-      } else {
-        onScanFailed(DecodeException(DECODE_FAILED, context.getString(R.string.scan_decode_failed)))
-        if (!isParseImage) cameraManager?.requestPreviewFrameShot()
       }
+    } finally {
+      isDecoding = false
     }
-    isDecoding = false
   }
 
   private suspend fun onScanFailed(exception: DecodeException) {

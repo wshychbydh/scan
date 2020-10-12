@@ -6,11 +6,9 @@ import android.graphics.Rect
 import android.hardware.Camera
 import android.hardware.Camera.AutoFocusCallback
 import android.hardware.Camera.PreviewCallback
-import android.os.Handler
-import android.os.Message
 import android.view.SurfaceHolder
 import android.view.WindowManager
-import java.io.IOException
+import kotlin.math.abs
 
 internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallback {
   private enum class CameraState {
@@ -22,22 +20,9 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
   private var cameraSize: Size? = null
   private var mState: CameraState? = null
   private var mFrameShotListener: PreviewFrameShotListener? = null
-  private val mHandler: Handler = object : Handler() {
-    override fun handleMessage(msg: Message) {
-      when (msg.what) {
-        MESSAGE_REQUEST_AUTO_FOCUS -> if (mState == CameraState.PREVIEW && mCamera != null) {
-          try {
-            mCamera!!.autoFocus(this@CameraManager)
-          } catch (e: Exception) {
-            e.printStackTrace()
-          }
-        }
-      }
-    }
-  }
 
-  fun initCamera(holder: SurfaceHolder?): Boolean {
-    mCamera = Camera.open() ?: return false
+  fun initCamera(holder: SurfaceHolder?) {
+    mCamera = Camera.open() ?: return
     mState = CameraState.OPEN
     mCamera!!.setDisplayOrientation(90)
     val parameters = mCamera!!.parameters
@@ -45,12 +30,7 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
     parameters.setPreviewSize(cameraSize!!.height, cameraSize!!.width)
     parameters.previewFormat = ImageFormat.NV21 //Default
     mCamera!!.parameters = parameters
-    try {
-      mCamera!!.setPreviewDisplay(holder)
-    } catch (e: IOException) {
-      return false
-    }
-    return true
+    mCamera!!.setPreviewDisplay(holder)
   }
 
   val isCameraAvailable: Boolean
@@ -136,7 +116,6 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
   }
 
   fun stopPreview() {
-    mHandler.removeCallbacksAndMessages(null)
     if (mCamera != null) {
       mCamera!!.stopPreview()
       mState = CameraState.OPEN
@@ -179,9 +158,8 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
       // Rotate 90 degrees
       val previewWidth = previewSize.height
       val previewHeight = previewSize.width
-      val newDiff = (Math.abs(previewWidth - screenSize.width) * Math.abs(previewWidth - screenSize.width)
-          + Math.abs(previewHeight - screenSize.height) * Math
-          .abs(previewHeight - screenSize.height))
+      val newDiff = (abs(previewWidth - screenSize.width) * abs(previewWidth - screenSize.width)
+          + abs(previewHeight - screenSize.height) * abs(previewHeight - screenSize.height))
       if (newDiff == 0) {
         size.width = previewWidth
         size.height = previewHeight
@@ -225,17 +203,16 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
 
   override fun onAutoFocus(success: Boolean, camera: Camera) {
     if (mCamera != null && mState == CameraState.PREVIEW) {
-      mHandler.sendEmptyMessageDelayed(MESSAGE_REQUEST_AUTO_FOCUS, REQUEST_AUTO_FOCUS_INTERVAL_MS.toLong())
+      try {
+        mCamera!!.autoFocus(this@CameraManager)
+      } catch (e: Exception) {
+        e.printStackTrace()
+      }
     }
   }
 
   fun setPreviewFrameShotListener(l: PreviewFrameShotListener?) {
     mFrameShotListener = l
-  }
-
-  companion object {
-    private const val REQUEST_AUTO_FOCUS_INTERVAL_MS = 1500
-    private const val MESSAGE_REQUEST_AUTO_FOCUS = 0
   }
 
   init {
