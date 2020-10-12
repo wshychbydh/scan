@@ -61,7 +61,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="12dp"
     android:background="@null"
-    android:text="Flashlightco"
+    android:text="Flashlight"
     android:textColor="@android:color/white"
     android:textSize="15sp"
     app:layout_constraintStart_toStartOf="parent"
@@ -77,15 +77,15 @@
         .surfaceView(surfaceView)                 //(必须)
         .decodeListener(object :DecodeListener{   //(必须)
           override fun onPreviewSucceed() {
-            //预览成功
+            //预览成功 (UI Thread)
           }
 
           override suspend fun onScanSucceed(bitmap: Bitmap, content: String) {
-            //扫码成功
+            //扫码成功 (Work Thread)
           }
 
           override fun onScanFailed(throwable: Throwable) {
-			//扫码失败
+			      //扫码失败 (UI Thread)
           }
         })
         .permissionChecker(this)     //camera权限请求 (必须), 参考DecodeFragment或DecodeActivity
