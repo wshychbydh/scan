@@ -85,7 +85,7 @@
           }
 
           override fun onScanFailed(throwable: Throwable) {
-			      //扫码失败 (UI Thread)
+            //扫码失败 (UI Thread)
           }
         })
         .permissionChecker(this)     //camera权限请求 (必须), 参考DecodeFragment或DecodeActivity
