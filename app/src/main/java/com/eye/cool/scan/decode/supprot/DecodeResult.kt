@@ -11,6 +11,6 @@ internal data class DecodeResult(
     val bitmap: Bitmap? = null
 ) {
   fun isValid(): Boolean {
-    return result != null && bitmap != null
+    return !result?.text.isNullOrEmpty() && bitmap != null
   }
 }

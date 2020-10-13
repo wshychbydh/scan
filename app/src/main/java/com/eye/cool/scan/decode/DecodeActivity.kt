@@ -11,8 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.eye.cool.scan.decode.listener.PermissionChecker
 import com.eye.cool.scan.decode.supprot.complete
 import com.eye.cool.scan.encode.QRCodeUtil
-import kotlinx.coroutines.CancellableContinuation
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 
 abstract class DecodeActivity : AppCompatActivity(), PermissionChecker {
 

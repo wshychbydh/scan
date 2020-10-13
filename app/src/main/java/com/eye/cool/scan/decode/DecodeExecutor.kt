@@ -3,6 +3,8 @@ package com.eye.cool.scan.decode
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.os.Vibrator
 import android.view.SurfaceHolder
 import androidx.activity.ComponentActivity
@@ -15,22 +17,23 @@ import com.eye.cool.scan.R
 import com.eye.cool.scan.camera.CameraManager
 import com.eye.cool.scan.camera.PreviewFrameShotListener
 import com.eye.cool.scan.camera.Size
-import com.eye.cool.scan.decode.supprot.DecodeResult
 import com.eye.cool.scan.decode.source.LuminanceSource
 import com.eye.cool.scan.decode.source.PlanarYUVLuminanceSource
 import com.eye.cool.scan.decode.source.RGBLuminanceSourcePixels
 import com.eye.cool.scan.decode.supprot.DecodeException
 import com.eye.cool.scan.decode.supprot.DecodeException.Companion.CAMERA_FAILED
-import com.eye.cool.scan.decode.supprot.DecodeException.Companion.DECODE_FAILED
 import com.eye.cool.scan.decode.supprot.DecodeException.Companion.IMAGE_PATH_ERROR
 import com.eye.cool.scan.decode.supprot.DecodeException.Companion.PARAMS_INVALID
 import com.eye.cool.scan.decode.supprot.DecodeException.Companion.PARSE_FAILED
 import com.eye.cool.scan.decode.supprot.DecodeException.Companion.PERMISSION_FAILED
+import com.eye.cool.scan.decode.supprot.DecodeResult
 import com.eye.cool.scan.decode.supprot.Decoder
 import com.eye.cool.scan.util.BeepManager
 import com.eye.cool.scan.util.DocumentUtil
-import kotlinx.coroutines.*
-import java.lang.Exception
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, LifecycleObserver {
 
@@ -44,6 +47,8 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
 
   @Volatile
   private var isDecoding = false
+
+  private val handler = Handler(Looper.getMainLooper())
 
   constructor(fragment: Fragment, params: DecodeParams) {
     this.context = fragment.requireContext()
@@ -63,9 +68,7 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
 
   private fun checkParams(params: DecodeParams) {
     if (!params.isValid()) {
-      scope.launch {
-        onScanFailed(DecodeException(PARAMS_INVALID, context.getString(R.string.scan_params_invalid)))
-      }
+      onScanFailed(DecodeException(PARAMS_INVALID, context.getString(R.string.scan_params_invalid)))
       return
     }
     params.surfaceView?.holder?.addCallback(this)
@@ -111,7 +114,7 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
     }
   }
 
-  private suspend fun execute(holder: SurfaceHolder): Boolean {
+  private fun execute(holder: SurfaceHolder): Boolean {
     CameraManager(context).apply {
       setPreviewFrameShotListener(this@DecodeExecutor)
       try {
@@ -224,13 +227,13 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
     }
   }
 
-  private suspend fun onScanFailed(exception: DecodeException) {
-    withContext(Dispatchers.Main) {
+  private fun onScanFailed(exception: DecodeException) {
+    handler.post {
       params.decodeListener?.onScanFailed(exception)
     }
   }
 
-  private suspend fun onDecodeSuccess(result: DecodeResult) {
+  private fun onDecodeSuccess(result: DecodeResult) {
     beepManager?.playBeepSound()
     if (params.vibrator) vibrator()
 
@@ -238,7 +241,9 @@ class DecodeExecutor : SurfaceHolder.Callback, PreviewFrameShotListener, Lifecyc
     val bitmap = if (params.scaleBitmap) {
       scaleBitmap(bmp, params.scaleFactor, params.scaleFilter)
     } else bmp
-    params.decodeListener?.onScanSucceed(bitmap, result.result!!.text)
+    handler.post {
+      params.decodeListener?.onScanSucceed(bitmap, result.result!!.text)
+    }
   }
 
   private fun scaleBitmap(bmp: Bitmap, factor: Float, filter: Boolean) = try {

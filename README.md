@@ -80,8 +80,8 @@
             //预览成功 (UI Thread)
           }
 
-          override suspend fun onScanSucceed(bitmap: Bitmap, content: String) {
-            //扫码成功 (Work Thread)
+          override fun onScanSucceed(bitmap: Bitmap, content: String) {
+            //扫码成功 (UI Thread)
           }
 
           override fun onScanFailed(throwable: Throwable) {

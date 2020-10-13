@@ -31,6 +31,7 @@ internal object Decoder {
       val bitmap = source.renderCroppedGreyScaleBitmap()
       it.complete(DecodeResult(result, bitmap))
     } catch (e: Exception) {
+      e.printStackTrace()
       it.complete(null)
     } finally {
       multiFormatReader.reset()

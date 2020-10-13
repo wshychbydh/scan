@@ -13,13 +13,13 @@ interface DecodeListener {
   fun onPreviewSucceed() {}
 
   /**
-   * Work Thread
+   * UI Thread
    *
    * Call when scan succeed with bitmap and content
    * @param bitmap
    * @param content
    */
-  suspend fun onScanSucceed(bitmap: Bitmap, content: String)
+  fun onScanSucceed(bitmap: Bitmap, content: String)
 
   /**
    * UI Thread

@@ -103,12 +103,14 @@ class CaptureView : View {
 
   override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
     super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-    val frameWidth = (measuredWidth * params.frameWidthRatio).toInt()
-    val frameHeight = (measuredHeight * params.frameHeightRatio).toInt()
-    frameRect.left = (measuredWidth - frameWidth) / 2
-    frameRect.right = (measuredWidth + frameWidth) / 2
-    frameRect.top = (measuredHeight - frameHeight) / 2
-    frameRect.bottom = (measuredHeight + frameHeight) / 2
+    val width = measuredWidth
+    val height = measuredHeight
+    val frameWidth = (width * params.frameWidthRatio).toInt()
+    val frameHeight = (height * params.frameHeightRatio).toInt()
+    frameRect.left = (width - frameWidth) / 2
+    frameRect.right = (width + frameWidth) / 2
+    frameRect.top = (height - frameHeight) / 2
+    frameRect.bottom = (height + frameHeight) / 2
     val offset = params.frameOffset
     frameDrawable?.setBounds(
         frameRect.left - offset,
@@ -122,8 +124,8 @@ class CaptureView : View {
 
     params.scanDesc?.apply {
       paint.textSize = params.descTextSize
-      descX = (measuredWidth - paint.measureText(this)) / 2f + params.descOffsetXRatio * width
-      descY = measuredHeight / 2 + paint.descent() - paint.ascent() + params.descOffsetYRatio * height
+      descX = (width - paint.measureText(this)) / 2f + params.descOffsetXRatio * width
+      descY = height / 2 + paint.descent() - paint.ascent() + params.descOffsetYRatio * height
     }
   }
 
