@@ -16,15 +16,15 @@ interface DecodeListener {
    * UI Thread
    *
    * Call when scan succeed with bitmap and content
-   * @param bitmap
-   * @param content
+   * @param [bitmap]
+   * @param [content]
    */
   fun onScanSucceed(bitmap: Bitmap, content: String)
 
   /**
    * UI Thread
    *
-   * @param error
+   * @param [error]
    */
   fun onScanFailed(error: DecodeException)
 }

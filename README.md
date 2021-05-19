@@ -70,8 +70,10 @@
 </androidx.constraintlayout.widget.ConstraintLayout>
 ```
 
-4. 构建扫码参数：DecodeParams
+4. 构建扫码参数：[DecodeParams](./app/src/main/java/com/eye/cool/scan/decode/DecodeParams.kt)
 ```
+   //kotlin构建： val params = DecodeParams.build{...} (推荐)
+
    val params = DecodeParams.Builder() //如未按要求设置，将返回参数无效错误.
         .captureView(captureView)                 //(必须)
         .surfaceView(surfaceView)                 //(必须)
@@ -95,7 +97,7 @@
 
 5. 配置参数 （以下两种方式选一）
 
-* 自定义构建DecodeExecutor
+* 自定义构建[DecodeExecutor](./app/src/main/java/com/eye/cool/scan/decode/DecodeExecutor.kt)
 
 ```
   val executor = CaptureExecutor(fragment/context, params)
@@ -115,29 +117,61 @@
   //其他支持的操作同上
 ```
 
-6. 生成二维码 (QRCodeUtil)
+6. 生成二维码[QRCodeUtil](./app/src/main/java/com/eye/cool/scan/encode/QRCodeUtil.kt)
 ```
+    //kotlin构建：val params = QRParams.build{...} (推荐)
+
     //构建二维码参数（注：如果参数无效，将返回null的bitmap）
-    val params = QRParams.Builder(content)  //（必传）二维码内容
-        .setLogo()                //（可选）设置logo
-        .setSize(width, height)   //（可选）二维码大小，默认500x500
-        .setMargin()              //（可选）二维码边距，默认2px
-        .setSavePath()            //（可选）二维码保存路径
-        .setSaveQuality()         //（可选）图片质量（0-100)，默认100
-        .setGapColor()            //（可选）间隙颜色，默认Color.WHITE
-        .setQrColor()             //（可选）二维码颜色，默认Color.BLACK
-        .setSaveFormat()          //（可选）保存格式，默认PNG
-        .setBitmapConfig()        //（可选）Bitmap的Config，默认RGB_565
-        .setLogoScale()           //（可选）Logo相对bitmap的比例，默认5.0
+    val params = QRParams.Builder()
+        .logo()                //（可选）设置logo
+        .size(width, height)   //（可选）二维码大小，默认500x500
+        .margin()              //（可选）二维码边距，默认2px
+        .savePath()            //（可选）二维码保存路径
+        .saveQuality()         //（可选）图片质量（0-100)，默认100
+        .gapColor()            //（可选）间隙颜色，默认Color.WHITE
+        .qrColor()             //（可选）二维码颜色，默认Color.BLACK
+        .saveFormat()          //（可选）保存格式，默认PNG
+        .bitmapConfig()        //（可选）Bitmap的Config，默认RGB_565
+        .logoScale()           //（可选）Logo相对bitmap的比例，默认5.0
         .build()
 
-    QRCodeUtil.createQRImage(params) {
+    QRCodeUtil.createQRCode(content, params) {
       //主线程调用
     }
 
-    val bitmap = QRCodeUtil.createQRImage(params)       //协程中调用
+    val bitmap = QRCodeUtil.createQRCode(content, params)       //协程中调用
 
-    val bitmap = QRCodeUtil.createQRImageAsync(params)  //非主线程调用
+    val bitmap = QRCodeUtil.createQRCodeAsync(content, params)  //非主线程调用
+
+```
+
+7. 生成条形码[BarcodeUtil](./app/src/main/java/com/eye/cool/scan/encode/BarcodeUtil.kt)
+```
+    //kotlin构建：val params = BarcodeParams.build{...} (推荐)
+
+    //构建条形码参数（注：如果参数无效，将返回null的bitmap）
+    val params = QRParams.Builder()
+        .size(width, height)   //（可选）条形码大小，默认480x280
+        .margin()              //（可选）条形码边距，默认10px
+        .savePath()            //（可选）条形码保存路径
+        .saveQuality()         //（可选）图片质量（0-100)，默认100
+        .gapColor()            //（可选）间隙颜色，默认Color.WHITE
+        .qrColor()             //（可选）二维码颜色，默认Color.BLACK
+        .saveFormat()          //（可选）保存格式，默认PNG
+        .bitmapConfig()        //（可选）Bitmap的Config，默认RGB_565
+        .showText()            //（可选）条形码底部显示内容，默认false
+        .textSize()            //（可选）底部文字大小，默认38
+        .textColor()           //（可选）底部文字颜色，默认Color.BLACK
+        .textPadding()         //（可选）底部文字距离条形码距离，默认2px
+        .build()
+
+    BarcodeUtil.createBarcode(content, params) {
+      //主线程调用
+    }
+
+    val bitmap = BarcodeUtil.createBarcode(content, params)       //协程中调用
+
+    val bitmap = BarcodeUtil.createBarcodeAsync(content, params)  //非主线程调用
 
 ```
 

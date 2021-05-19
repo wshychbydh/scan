@@ -68,7 +68,7 @@ internal class PlanarYUVLuminanceSource(
   /**
    * Based on the scan results, a grayscale image is generated
    */
-  public override fun renderCroppedGreyScaleBitmap(): Bitmap {
+  override fun renderCroppedGreyScaleBitmap(): Bitmap {
     val width = width
     val height = height
     val pixels = IntArray(width * height)
@@ -87,11 +87,6 @@ internal class PlanarYUVLuminanceSource(
     return bitmap
   }
 
-  /**
-   * @param yuvData data of YUV
-   * @param dataSize image size
-   * @param previewRect Image area to process
-   */
   init {
     require(!(previewRect.left + previewRect.width() > dataSize.width
         || previewRect.top + previewRect.height() > dataSize.height)) { "Crop rectangle does not fit within image data." }

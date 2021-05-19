@@ -5,19 +5,24 @@ import com.eye.cool.scan.decode.listener.DecodeListener
 import com.eye.cool.scan.decode.listener.PermissionChecker
 import com.eye.cool.scan.decode.view.CaptureView
 
-class DecodeParams private constructor() {
+class DecodeParams private constructor(
+    internal val surfaceView: SurfaceView?,
+    internal val captureView: CaptureView?,
 
-  internal var decodeListener: DecodeListener? = null
-  internal var permissionChecker: PermissionChecker? = null
-  internal var surfaceView: SurfaceView? = null
-  internal var captureView: CaptureView? = null
+    internal val scaleBitmap: Boolean,
+    internal val scaleFactor: Float,
+    internal val scaleFilter: Boolean,
 
-  internal var scaleBitmap = false
-  internal var scaleFactor = 2.0f
-  internal var scaleFilter = false
+    internal val vibrator: Boolean,
+    internal val playBeep: Boolean,
 
-  internal var vibrator = true
-  internal var playBeep = true
+    internal val decodeListener: DecodeListener?,
+    internal var permissionChecker: PermissionChecker?,
+) {
+
+  companion object {
+    inline fun build(block: Builder.() -> Unit) = Builder().apply(block).build()
+  }
 
   fun isValid(): Boolean {
     return decodeListener != null
@@ -26,57 +31,59 @@ class DecodeParams private constructor() {
         && permissionChecker != null
   }
 
-  class Builder {
+  data class Builder(
+      var surfaceView: SurfaceView? = null,
+      var captureView: CaptureView? = null,
 
-    private val params = DecodeParams()
+      var scaleBitmap: Boolean = false,
+      var scaleFactor: Float = 2.0f,
+      var scaleFilter: Boolean = false,
 
-    fun decodeListener(listener: DecodeListener): Builder {
-      params.decodeListener = listener
-      return this
-    }
+      var vibrator: Boolean = true,
+      var playBeep: Boolean = true,
 
-    fun surfaceView(surfaceView: SurfaceView): Builder {
-      params.surfaceView = surfaceView
-      return this
-    }
+      var decodeListener: DecodeListener? = null,
+      var permissionChecker: PermissionChecker? = null,
+  ) {
 
-    fun captureView(captureView: CaptureView): Builder {
-      params.captureView = captureView
-      return this
-    }
+    fun decodeListener(listener: DecodeListener) = apply { this.decodeListener = listener }
+
+    fun surfaceView(surfaceView: SurfaceView) = apply { this.surfaceView = surfaceView }
+
+    fun captureView(captureView: CaptureView) = apply { this.captureView = captureView }
 
     /**
      * {@link Bitmap.createScaledBitmap(bmp, bmp.width/factor, bmp.height/factor, filter)}
      *
-     * @param factor scale factor, default 2.0
-     * @param filter default false
+     * @param [factor] scale factor, default 2.0
+     * @param [filter] default false
      */
-    fun scaleBitmap(factor: Float = 2.0f, filter: Boolean = false): Builder {
-      if (factor <= 1.0f) return this
-      params.scaleFactor = factor
-      params.scaleFilter = filter
-      params.scaleBitmap = true
-      return this
+    fun scaleBitmap(factor: Float = 2.0f, filter: Boolean = false) = apply {
+      if (factor <= 1.0f)
+        this.scaleFactor = factor
+      this.scaleFilter = filter
+      this.scaleBitmap = true
     }
 
-    fun permissionChecker(listener: PermissionChecker): Builder {
-      params.permissionChecker = listener
-      return this
-    }
+    fun permissionChecker(listener: PermissionChecker) = apply { this.permissionChecker = listener }
 
     /**
      * <uses-permission android:name="android.permission.VIBRATE"/>
      */
-    fun vibrator(vibrator: Boolean): Builder {
-      params.vibrator = vibrator
-      return this
-    }
+    fun vibrator(vibrator: Boolean) = apply { this.vibrator = vibrator }
 
-    fun playBeep(playBeep: Boolean): Builder {
-      params.playBeep = playBeep
-      return this
-    }
+    fun playBeep(playBeep: Boolean) = apply { this.playBeep = playBeep }
 
-    fun build() = params
+    fun build() = DecodeParams(
+        surfaceView = surfaceView,
+        captureView = captureView,
+        scaleBitmap = scaleBitmap,
+        scaleFactor = scaleFactor,
+        scaleFilter = scaleFilter,
+        vibrator = vibrator,
+        playBeep = playBeep,
+        decodeListener = decodeListener,
+        permissionChecker = permissionChecker
+    )
   }
 }

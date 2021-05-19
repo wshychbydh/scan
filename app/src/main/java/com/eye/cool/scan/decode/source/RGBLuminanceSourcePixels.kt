@@ -23,7 +23,7 @@ internal class RGBLuminanceSourcePixels(
     return row
   }
 
-  public override fun renderCroppedGreyScaleBitmap(): Bitmap {
+  override fun renderCroppedGreyScaleBitmap(): Bitmap {
     val width = width
     val height = height
     val pixels = IntArray(width * height)

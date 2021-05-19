@@ -148,7 +148,7 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
   }
 
   /**
-   * 获取与屏幕大小最相近的预览图像大小
+   * Gets the preview image size closest to the screen size
    */
   private fun getBestPreviewSize(parameters: Camera.Parameters, screenSize: Size): Size {
     val size = Size(screenSize)
@@ -174,7 +174,9 @@ internal class CameraManager(context: Context) : AutoFocusCallback, PreviewCallb
   }
 
   /**
-   * 因为预览图像和屏幕大小可能不一样，所以屏幕上的区域要根据比例转化为预览图像上对应的区域
+   * Because the preview image and screen size may be different,
+   * the area on the screen should be converted to the corresponding area
+   * on the preview image according to the scale
    */
   fun getPreviewFrameRect(screenFrameRect: Rect): Rect {
     checkNotNull(mCamera) { "Need call initCamera() before this." }

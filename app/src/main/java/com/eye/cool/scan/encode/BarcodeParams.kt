@@ -50,23 +50,22 @@ class BarcodeParams private constructor(
       var savePath: String? = null,  //barcode will be saved to
       var saveFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.PNG,  // The format of the compressed image
       var saveQuality: Int = 100,  //Hint to the compressor, 0-100.
-      var showText: Boolean = true,
+      var showText: Boolean = false,
       var textSize: Float = 38f,
       var textColor: Int = Color.BLACK,
       var textPadding: Float = 2f,
   ) {
 
     /**
-     * The width will be adjusted according to the length of the content, taking the maximum value
+     * The size will be adjusted according to the length of the content, taking the maximum value
      *
      * [width] the width of barcode, default 480
-     */
-    fun width(width: Int) = apply { this.width = width }
-
-    /**
      * [height] the height of barcode, default 280
      */
-    fun height(height: Int) = apply { this.height = height }
+    fun size(width: Int, height: Int) = apply {
+      this.width = width
+      this.height = height
+    }
 
     /**
      * [margin] the margin of barcode to border, default 10
