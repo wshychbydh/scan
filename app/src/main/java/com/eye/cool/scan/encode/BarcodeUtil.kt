@@ -4,21 +4,73 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Rect
+import android.os.Looper
+import androidx.annotation.WorkerThread
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
 import java.util.*
 
 object BarcodeUtil {
 
-  fun create(
+  /**
+   * @param [params] configs of barcode
+   * @return bitmap on UI thread
+   */
+  @JvmStatic
+  fun createBarCode(
+      content: String?,
+      params: BarcodeParams,
+      callback: ((Bitmap?) -> Unit)
+  ) {
+    GlobalScope.launch {
+      val bitmap = withContext(Dispatchers.IO) {
+        createBarcodeAsync(content, params)
+      }
+      withContext(Dispatchers.Main) {
+        callback.invoke(bitmap)
+      }
+    }
+  }
+
+  /**
+   *  @param [params] configs of barcode
+   *  @return bitmap on UI thread
+   */
+  @JvmStatic
+  suspend fun createBarcode(content: String?, params: BarcodeParams): Bitmap? {
+    return withContext(Dispatchers.IO) {
+      val bitmap = createBarcodeAsync(content, params)
+      withContext(Dispatchers.Main) {
+        bitmap
+      }
+    }
+  }
+
+  /**
+   *  @param [params] configs of barcode. Null is returned if the parameter is invalid
+   *  @return bitmap on calling work thread
+   */
+  @JvmStatic
+  @WorkerThread
+  fun createBarcodeAsync(
       content: String?,
       params: BarcodeParams = BarcodeParams.Builder().build()
   ): Bitmap? {
+
+    check(Looper.myLooper() != Looper.getMainLooper()) { "You must be call this on sub thread" }
+
     if (content.isNullOrEmpty()) return null
+
+    if (!params.isValid()) return null
+
     return try {
       val hints = HashMap<EncodeHintType, Any>()
       hints[EncodeHintType.CHARACTER_SET] = "utf-8"

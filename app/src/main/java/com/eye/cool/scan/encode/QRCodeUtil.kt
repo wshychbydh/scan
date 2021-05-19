@@ -4,11 +4,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.hardware.Camera
 import android.os.Looper
-import android.util.Log
 import androidx.annotation.WorkerThread
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
-import com.google.zxing.WriterException
 import com.google.zxing.qrcode.QRCodeWriter
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +14,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
-import java.io.IOException
 import java.util.*
 
 object QRCodeUtil {
@@ -32,8 +29,7 @@ object QRCodeUtil {
       // setParameters is Used for MeiZu MX5.
       camera.parameters = camera.parameters
       true
-    } catch (e: Exception) {
-      Log.e("scan", e.message)
+    } catch (ignore: Exception) {
       false
     } finally {
       try {
@@ -44,14 +40,18 @@ object QRCodeUtil {
   }
 
   /**
-   * @param params configs of QRCode
+   * @param [params] configs of QRCode
    * @return bitmap on UI thread
    */
   @JvmStatic
-  fun createQRImage(params: QRParams, callback: ((Bitmap?) -> Unit)) {
+  fun createQrCode(
+      content: String?,
+      params: QRParams,
+      callback: ((Bitmap?) -> Unit)
+  ) {
     GlobalScope.launch {
       val bitmap = withContext(Dispatchers.IO) {
-        createQRImageAsync(params)
+        createQRCodeAsync(content, params)
       }
       withContext(Dispatchers.Main) {
         callback.invoke(bitmap)
@@ -60,13 +60,13 @@ object QRCodeUtil {
   }
 
   /**
-   *  @param params configs of QRCode
+   *  @param [params] configs of QRCode
    *  @return bitmap on UI thread
    */
   @JvmStatic
-  suspend fun createQRImage(params: QRParams): Bitmap? {
+  suspend fun createQRCode(content: String?, params: QRParams): Bitmap? {
     return withContext(Dispatchers.IO) {
-      val bitmap = createQRImageAsync(params)
+      val bitmap = createQRCodeAsync(content, params)
       withContext(Dispatchers.Main) {
         bitmap
       }
@@ -74,15 +74,16 @@ object QRCodeUtil {
   }
 
   /**
-   *  @param params configs of QRCode. Null is returned if the parameter is invalid
-   *  @return bitmap on calling thread
+   *  @param [params] configs of QRCode. Null is returned if the parameter is invalid
+   *  @return bitmap on calling work thread
    */
   @JvmStatic
-  @Throws
   @WorkerThread
-  fun createQRImageAsync(params: QRParams): Bitmap? {
+  fun createQRCodeAsync(content: String?, params: QRParams): Bitmap? {
 
     check(Looper.myLooper() != Looper.getMainLooper()) { "You must be call this on sub thread" }
+
+    if (content.isNullOrEmpty()) return null
 
     if (!params.isValid()) return null
 
@@ -94,7 +95,7 @@ object QRCodeUtil {
       val widthPix = params.width
       val heightPix = params.height
       val bitMatrix = QRCodeWriter().encode(
-          params.content,
+          content,
           BarcodeFormat.QR_CODE,
           widthPix,
           heightPix,
@@ -128,9 +129,7 @@ object QRCodeUtil {
         )
       }
       return bitmap
-    } catch (e: WriterException) {
-      e.printStackTrace()
-    } catch (e: IOException) {
+    } catch (e: Exception) {
       e.printStackTrace()
     }
     return null
